@@ -259,15 +259,61 @@
 
         <!-- Reports Tab -->
         <div id="reportsTab" class="tab-content">
-            <div style="padding: 40px; text-align: center;">
-                <h2>📊 Reports Section</h2>
-                <p>Detailed reports and analytics will be displayed here</p>
-                <button class="btn btn-primary" onclick="generateMonthlyReport()">Generate Monthly Report</button>
-                <button class="btn btn-primary" onclick="generateYearlyReport()">Generate Yearly Report</button>
+            <div class="reports-container">
+                <!-- Report Controls -->
+                <div class="reports-header">
+                    <h2 class="reports-title">📊 BALANCE SHEET REPORTS</h2>
+                    <div class="reports-controls">
+                        <div class="control-group">
+                            <label>Store:</label>
+                            <select id="reportStoreSelect" onchange="loadReportSnapshots()">
+                                <option value="">Select Store...</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Snapshot:</label>
+                            <select id="reportSnapshotSelect" onchange="loadBalanceSheet()">
+                                <option value="">Select Snapshot...</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Type:</label>
+                            <select id="reportTypeFilter" onchange="loadReportSnapshots()">
+                                <option value="all">All</option>
+                                <option value="completed">Published Only</option>
+                                <option value="draft">Drafts Only</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" onclick="toggleComparison()">
+                            <span id="compareToggleText">Enable Comparison</span>
+                        </button>
+                        <button class="btn btn-success" onclick="exportBalanceSheet()">
+                            📥 Export PDF
+                        </button>
+                        <button class="btn btn-secondary" onclick="printBalanceSheet()">
+                            🖨️ Print
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Comparison Controls (Hidden by default) -->
+                <div id="comparisonControls" class="comparison-controls" style="display: none;">
+                    <div class="control-group">
+                        <label>Compare With:</label>
+                        <select id="compareSnapshotSelect" onchange="loadComparison()">
+                            <option value="">Select Snapshot to Compare...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Balance Sheet Display -->
+                <div id="balanceSheetDisplay" class="balance-sheet-container">
+                    <div class="balance-sheet-placeholder">
+                        <p>Select a store and snapshot to view the balance sheet</p>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-
     <!-- Move Account Modal -->
     <div id="moveAccountModal" class="modal-overlay">
         <div class="modal-content">

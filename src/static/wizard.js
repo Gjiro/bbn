@@ -22,11 +22,18 @@ let chartInstances = {};
 let masterSKUData = null;
 let currentInventoryAccountId = null;
 
+// Reports Tab State
+let currentBalanceSheet = null;
+let comparisonMode = false;
+let currentSnapshot = null;
+let compareSnapshot = null;
+
+
 // Initialize on load
 document.addEventListener('DOMContentLoaded', function() {
     initializeWizard();
     document.getElementById('storeSelect').addEventListener('change', onStoreChange);
-    
+
     // Set today's date
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('snapshotDate').value = today;
@@ -36,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load settings content
     showSettingsSection('drafts');
-    
+
     // Load Elite Era Dashboard on startup if dashboard tab exists
     if (document.getElementById('dashboardTab')) {
         loadEliteEraDashboard();
@@ -44,21 +51,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Tab switching
+// Tab switching (MERGED)
 function switchTab(tabName) {
     // Hide all tabs
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
     });
-    
+
     // Remove active class from all tab buttons
     document.querySelectorAll('.tab').forEach(btn => {
         btn.classList.remove('active');
     });
-    
+
     // Show selected tab
     document.getElementById(tabName + 'Tab').classList.add('active');
-    
+
     // Set active tab button
     event.target.classList.add('active');
 
@@ -66,18 +73,24 @@ function switchTab(tabName) {
     if (tabName === 'settings' && currentSettingsSection) {
         showSettingsSection(currentSettingsSection);
     }
-    
+
     // If switching to dashboard, refresh data
     if (tabName === 'dashboard') {
         loadEliteEraDashboard();
     }
+    
+    // If switching to reports, initialize it
+    if (tabName === 'reports') {
+        initializeReportsTab();
+    }
 }
+
 
 // Toggle category collapse
 function toggleCategory(category) {
     const header = event.currentTarget;
     const content = document.getElementById(category + 'Content');
-    
+
     header.classList.toggle('collapsed');
     content.classList.toggle('collapsed');
 }
@@ -91,7 +104,7 @@ async function initializeWizard() {
             headers: {'Content-Type': 'application/json'}
         });
         const data = await response.json();
-        
+
         if (data.success) {
             sessionId = data.session_id;
             allStores = data.stores;
@@ -110,7 +123,7 @@ async function initializeWizard() {
 function populateStores(stores) {
     const select = document.getElementById('storeSelect');
     select.innerHTML = '<option value="">Select Store...</option>';
-    
+
     stores.forEach(store => {
         const option = document.createElement('option');
         option.value = store.id;
@@ -126,18 +139,18 @@ async function onStoreChange() {
         clearAccountSections();
         return;
     }
-    
+
     currentStoreId = storeId;
     showLoading(true);
-    
+
     try {
         const response = await fetch(`/api/wizard/accounts/${storeId}`);
         const data = await response.json();
-        
+
         if (data.success) {
             storeAccounts = data.accounts;
             renderAccounts();
-            
+
             if (currentDraftId && currentDraftBalances) {
                 restoreDraftValues();
             }
@@ -158,7 +171,7 @@ function renderAccounts() {
     renderAccountSection('inventory', storeAccounts.inventory, true); // Enable helpers for inventory
     renderAccountSection('receivables', storeAccounts.receivables);
     renderAccountSection('liabilities', storeAccounts.liabilities);
-    
+
     // Add input listeners
     document.querySelectorAll('.account-input').forEach(input => {
         input.addEventListener('input', function() {
@@ -181,7 +194,7 @@ function renderAccountSection(containerId, accounts, showInventoryHelpers = fals
         container.innerHTML = '<p style="color: #999; font-size: 13px;">No accounts available</p>';
         return;
     }
-    
+
     let html = '';
     accounts.forEach(account => {
         const isInventoryAccount = account.type === 'Inventory' || account.name.includes('Inventory');
@@ -207,14 +220,14 @@ function renderAccountSection(containerId, accounts, showInventoryHelpers = fals
             </div>
         `;
     });
-    
+
     container.innerHTML = html;
 }
 
 // Show Inventory Helper Modal
 function showInventoryHelper(accountId, accountName) {
     currentInventoryAccountId = accountId;
-    
+
     // Create or update the inventory helper modal
     let modal = document.getElementById('inventoryHelperModal');
     if (!modal) {
@@ -285,7 +298,7 @@ function showInventoryHelper(accountId, accountName) {
         `;
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
-    
+
     document.getElementById('inventoryAccountName').textContent = accountName;
     document.getElementById('inventoryHelperModal').classList.add('active');
 }
@@ -305,7 +318,7 @@ function closeInventoryHelper() {
 function loadMasterSKU(input) {
     const file = input.files[0];
     if (!file) return;
-    
+
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
@@ -362,12 +375,12 @@ function loadMasterSKU(input) {
 function processFBAInventory() {
     const fileInput = document.getElementById('fbaInventoryFile');
     const file = fileInput.files[0];
-    
+
     if (!file) {
         showMessage('Please select an FBA inventory file', 'error');
         return;
     }
-    
+
     if (!masterSKUData) {
         const stored = localStorage.getItem('masterSKUData');
         if (stored) {
@@ -377,7 +390,7 @@ function processFBAInventory() {
             return;
         }
     }
-    
+
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
@@ -434,12 +447,12 @@ function processFBAInventory() {
 function processWarehouseInventory() {
     const fileInput = document.getElementById('warehouseInventoryFile');
     const file = fileInput.files[0];
-    
+
     if (!file) {
         showMessage('Please select a warehouse inventory file', 'error');
         return;
     }
-    
+
     if (!masterSKUData) {
         const stored = localStorage.getItem('masterSKUData');
         if (stored) {
@@ -449,7 +462,7 @@ function processWarehouseInventory() {
             return;
         }
     }
-    
+
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
@@ -538,10 +551,10 @@ function processWarehouseInventory() {
 function updateTotalInventoryValue() {
     const fbaText = document.getElementById('fbaValue').textContent;
     const warehouseText = document.getElementById('warehouseValue').textContent;
-    
+
     const fbaValue = parseFloat(fbaText.replace(/[$,]/g, '')) || 0;
     const warehouseValue = parseFloat(warehouseText.replace(/[$,]/g, '')) || 0;
-    
+
     const total = fbaValue + warehouseValue;
     document.getElementById('totalInventoryValue').textContent = formatCurrency(total);
 }
@@ -550,12 +563,12 @@ function updateTotalInventoryValue() {
 function applyInventoryValue() {
     const totalText = document.getElementById('totalInventoryValue').textContent;
     const totalValue = parseFloat(totalText.replace(/[$,]/g, '')) || 0;
-    
+
     if (totalValue === 0) {
         showMessage('No inventory value calculated', 'error');
         return;
     }
-    
+
     // Find the input for this account and set the value
     const input = document.querySelector(`input[data-account-id="${currentInventoryAccountId}"]`);
     if (input) {
@@ -573,7 +586,7 @@ function applyInventoryValue() {
 function parseCSV(csv) {
     const lines = csv.split('\n');
     const rows = [];
-    
+
     lines.forEach(line => {
         if (line.trim()) {
             // Simple CSV parsing - may need enhancement for quoted values
@@ -581,7 +594,7 @@ function parseCSV(csv) {
             rows.push(columns);
         }
     });
-    
+
     return rows;
 }
 
@@ -614,7 +627,7 @@ function initializeDragAndDrop() {
 // Settings section management
 function showSettingsSection(section) {
     currentSettingsSection = section;
-    
+
     // Update active menu item only if event exists and has a target
     if (typeof event !== 'undefined' && event && event.target) {
         document.querySelectorAll('.settings-menu-item').forEach(item => {
@@ -632,9 +645,9 @@ function showSettingsSection(section) {
             }
         });
     }
-    
+
     const content = document.getElementById('settingsContent');
-    
+
     switch(section) {
         case 'drafts':
             loadDraftsSection();
@@ -699,11 +712,11 @@ function loadHelpersSection() {
 async function loadDraftsSection() {
     const content = document.getElementById('settingsContent');
     content.innerHTML = '<h2>📋 Pending Drafts</h2><div>Loading...</div>';
-    
+
     try {
         const response = await fetch('/api/wizard/drafts');
         const data = await response.json();
-        
+
         if (data.success && data.drafts.length > 0) {
             let html = '<h2>📋 Pending Drafts</h2>';
             html += '<div class="category-list">';
@@ -740,11 +753,11 @@ async function loadDraftsSection() {
 async function loadCategoriesSection() {
     const content = document.getElementById('settingsContent');
     content.innerHTML = '<h2>📚 Categories Management</h2><div>Loading...</div>';
-    
+
     try {
         const response = await fetch('/api/wizard/account-types');
         const data = await response.json();
-        
+
         if (data.success) {
             let html = `
                 <h2>📚 Categories Management</h2>
@@ -780,7 +793,7 @@ async function loadCategoriesSection() {
 // Load accounts section with full management
 async function loadAccountsSection() {
     const content = document.getElementById('settingsContent');
-    
+
     if (!currentStoreId) {
         content.innerHTML = `
             <h2>💼 All Accounts</h2>
@@ -788,13 +801,13 @@ async function loadAccountsSection() {
         `;
         return;
     }
-    
+
     content.innerHTML = '<h2>💼 All Accounts</h2><div>Loading...</div>';
-    
+
     try {
         const response = await fetch(`/api/wizard/accounts/${currentStoreId}`);
         const data = await response.json();
-        
+
         if (data.success) {
             // Combine all accounts
             const allAccounts = [
@@ -881,7 +894,7 @@ async function loadEliteEraDashboard(includeDrafts = false) {
         const url = includeDrafts ? '/api/dashboard/summary?include_drafts=true' : '/api/dashboard/summary';
         const response = await fetch(url);
         const data = await response.json();
-        
+
         if (data.success) {
             dashboardData = data.summary;
             dashboardData.stores = data.stores;
@@ -915,13 +928,13 @@ function updateEliteKPIs() {
     animateValue('eliteTotalLiabilities', 0, dashboardData.total_liabilities, 1000, true);
     animateValue('eliteNetPosition', 0, dashboardData.net_position, 1000, true);
     animateValue('eliteYtdProfit', 0, dashboardData.ytd_profit || 0, 1000, true);
-    
+
     // Update trends
     const assetsTrend = document.getElementById('assetsTrend');
     const liabilitiesTrend = document.getElementById('liabilitiesTrend');
     const netPositionTrend = document.getElementById('netPositionTrend');
     const profitTrend = document.getElementById('profitTrend');
-    
+
     if (assetsTrend) assetsTrend.textContent = '↑ +5.2%';
     if (liabilitiesTrend) liabilitiesTrend.textContent = '↓ -2.1%';
     if (netPositionTrend) {
@@ -934,11 +947,11 @@ function updateEliteKPIs() {
 function animateValue(id, start, end, duration, isCurrency = false) {
     const element = document.getElementById(id);
     if (!element) return;
-    
+
     const range = end - start;
     const increment = range / (duration / 16); // 60 FPS
     let current = start;
-    
+
     const timer = setInterval(() => {
         current += increment;
         if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
@@ -952,9 +965,9 @@ function animateValue(id, start, end, duration, isCurrency = false) {
 function updateStoreBreakdown() {
     const container = document.getElementById('storesBreakdownGrid');
     if (!container) return;
-    
+
     let html = '';
-    
+
     if (!dashboardData.stores || dashboardData.stores.length === 0) {
         html = '<p style="text-align: center; color: #999;">No completed snapshots available</p>';
         
@@ -1022,7 +1035,7 @@ function updateStoreBreakdown() {
                    '</div>' + html;
         }
     }
-    
+
     container.innerHTML = html;
 }
 
@@ -1036,7 +1049,7 @@ function initializeCharts() {
     // Initialize Asset Distribution Chart
     const assetCtx = document.getElementById('assetChart');
     const trendCtx = document.getElementById('trendChart');
-    
+
     if (assetCtx) {
         chartInstances.assetChart = new Chart(assetCtx, {
             type: 'doughnut',
@@ -1068,7 +1081,7 @@ function initializeCharts() {
             }
         });
     }
-    
+
     if (trendCtx) {
         chartInstances.trendChart = new Chart(trendCtx, {
             type: 'line',
@@ -1110,7 +1123,7 @@ function updateDashboardCharts() {
         chartInstances.assetChart.data.datasets[0].data = data;
         chartInstances.assetChart.update();
     }
-    
+
     // Update Trend Chart - this would need historical data
     // For now, we'll create mock data
     if (chartInstances.trendChart) {
@@ -1148,11 +1161,11 @@ function exportDashboard() {
     csv += `YTD Profit,${dashboardData.ytd_profit || 0}\n\n`;
     csv += 'STORE BREAKDOWN\n';
     csv += 'Store,Net Position,Assets,Liabilities,YTD Sales,YTD Profit\n';
-    
+
     dashboardData.stores.forEach(store => {
         csv += `${store.store_name},${store.net_position},${store.total_assets},${store.total_liabilities},${store.ytd_sales},${store.ytd_profit}\n`;
     });
-    
+
     // Download CSV
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -1161,7 +1174,7 @@ function exportDashboard() {
     a.download = `elite_era_dashboard_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
-    
+
     showMessage('Dashboard exported successfully!', 'success');
 }
 
@@ -1177,7 +1190,7 @@ function generateYearlyReport() {
 function filterAccounts() {
     const searchTerm = document.getElementById('accountSearch').value.toLowerCase();
     const accounts = document.querySelectorAll('.account-item');
-    
+
     accounts.forEach(account => {
         const name = account.dataset.accountName;
         if (name.includes(searchTerm)) {
@@ -1226,14 +1239,14 @@ function openAddCategoryModal() {
         `;
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
-    
+
     // Reset form
     document.getElementById('categoryModalTitle').textContent = 'Add New Category';
     document.getElementById('categoryName').value = '';
     document.getElementById('categoryType').value = 'Asset';
     document.getElementById('categorySortOrder').value = '0';
     categoryToEdit = null;
-    
+
     // Show modal
     document.getElementById('categoryModal').classList.add('active');
 }
@@ -1256,12 +1269,12 @@ async function saveCategory() {
     const name = document.getElementById('categoryName').value;
     const category = document.getElementById('categoryType').value;
     const sortOrder = parseInt(document.getElementById('categorySortOrder').value) || 0;
-    
+
     if (!name) {
         showMessage('Please enter a category name', 'error');
         return;
     }
-    
+
     showLoading(true);
     try {
         const url = categoryToEdit
@@ -1298,7 +1311,7 @@ async function saveCategory() {
 
 async function deleteCategory(id, name) {
     if (!confirm(`Delete category "${name}"? This cannot be undone.`)) return;
-    
+
     showLoading(true);
     try {
         const response = await fetch(`/api/wizard/account-type/${id}`, {
@@ -1365,12 +1378,12 @@ async function confirmAddAccount() {
     const typeId = document.getElementById('newAccountType').value;
     const bankId = document.getElementById('newAccountBank').value;
     const accountNumber = document.getElementById('newAccountNumber').value;
-    
+
     if (!name || !typeId || !currentStoreId) {
         showMessage('Please fill in required fields', 'error');
         return;
     }
-    
+
     showLoading(true);
     try {
         const response = await fetch('/api/wizard/add-account', {
@@ -1413,7 +1426,7 @@ async function confirmAddAccount() {
 // Delete account
 async function deleteAccount(accountId, accountName) {
     if (!confirm(`Delete "${accountName}"?`)) return;
-    
+
     showLoading(true);
     try {
         const response = await fetch(`/api/wizard/delete-account/${accountId}`, {
@@ -1443,7 +1456,7 @@ function showMoveOptions(accountId, accountName) {
     accountToMove = {id: accountId, name: accountName};
     document.getElementById('moveAccountName').value = accountName;
     document.getElementById('moveAccountModal').classList.add('active');
-    
+
     // Populate category options
     const categorySelect = document.getElementById('moveCategorySelect');
     categorySelect.innerHTML = `
@@ -1451,7 +1464,7 @@ function showMoveOptions(accountId, accountName) {
         <option value="assets">Assets</option>
         <option value="liabilities">Liabilities</option>
     `;
-    
+
     // Add change listener for category to populate subcategories
     categorySelect.onchange = function() {
         populateSubcategories(this.value);
@@ -1460,7 +1473,7 @@ function showMoveOptions(accountId, accountName) {
 
 function populateSubcategories(category) {
     const subcategorySelect = document.getElementById('moveSubcategorySelect');
-    
+
     if (category === 'assets') {
         subcategorySelect.innerHTML = `
             <option value="">Select Subcategory...</option>
@@ -1490,10 +1503,10 @@ async function addAccountToGroup(groupType) {
         showMessage('Please select a store first', 'error');
         return;
     }
-    
+
     // Open the add account modal with pre-selected type based on group
     openAddAccountModal();
-    
+
     // Pre-select account type based on group
     setTimeout(() => {
         const typeSelect = document.getElementById('newAccountType');
@@ -1532,7 +1545,7 @@ async function addAccountToGroup(groupType) {
 // Delete draft from settings
 async function deleteDraftFromSettings(draftId) {
     if (!confirm('Delete this draft?')) return;
-    
+
     showLoading(true);
     try {
         const response = await fetch(`/api/wizard/draft/${draftId}`, {
@@ -1560,15 +1573,15 @@ async function saveDraft() {
         showMessage('Please select a store', 'error');
         return;
     }
-    
+
     const snapshotDate = document.getElementById('snapshotDate').value;
     if (!snapshotDate) {
         showMessage('Please select a date', 'error');
         return;
     }
-    
+
     const balances = collectBalances();
-    
+
     showLoading(true);
     try {
         const response = await fetch('/api/wizard/save-draft', {
@@ -1608,23 +1621,23 @@ async function publishSnapshot() {
         showMessage('Please select a store', 'error');
         return;
     }
-    
+
     const snapshotDate = document.getElementById('snapshotDate').value;
     if (!snapshotDate) {
         showMessage('Please select a date', 'error');
         return;
     }
-    
+
     const balances = collectBalances();
     if (balances.length === 0) {
         showMessage('Please enter at least one balance', 'error');
         return;
     }
-    
+
     if (!confirm('Publish this as final?')) {
         return;
     }
-    
+
     showLoading(true);
     try {
         const response = await fetch('/api/wizard/save-snapshot', {
@@ -1662,7 +1675,7 @@ async function loadPreviousSnapshot() {
         showMessage('Please select a store first', 'error');
         return;
     }
-    
+
     showLoading(true);
     try {
         const response = await fetch(`/api/wizard/latest-snapshot/${currentStoreId}`);
@@ -1761,7 +1774,7 @@ function switchToEntryTab() {
         tab.classList.remove('active');
     });
     document.getElementById('entryTab').classList.add('active');
-    
+
     document.querySelectorAll('.tab').forEach(btn => {
         btn.classList.remove('active');
     });
@@ -1771,7 +1784,7 @@ function switchToEntryTab() {
 // Clear all inputs
 function clearAll() {
     if (!confirm('Clear all entered values?')) return;
-    
+
     document.querySelectorAll('.account-input').forEach(input => {
         input.value = '';
         input.classList.remove('has-value');
@@ -1794,7 +1807,7 @@ function restoreDraftValues() {
     if (!currentDraftBalances || Object.keys(currentDraftBalances).length === 0) {
         return;
     }
-    
+
     for (const [accountId, value] of Object.entries(currentDraftBalances)) {
         const input = document.querySelector(`input[data-account-id="${accountId}"]`);
         if (input) {
@@ -1802,7 +1815,7 @@ function restoreDraftValues() {
             input.classList.add('has-value');
         }
     }
-    
+
     updateSummary();
 }
 
@@ -1810,7 +1823,7 @@ function restoreDraftValues() {
 function toggleSummarySection(sectionId) {
     const section = document.getElementById(sectionId);
     const toggleIcon = document.getElementById(sectionId + 'Toggle');
-    
+
     if (section) {
         section.classList.toggle('collapsed');
         if (toggleIcon) {
@@ -1823,7 +1836,7 @@ function toggleSummarySection(sectionId) {
 function updateSummary() {
     let totalAssets = 0;
     let totalLiabilities = 0;
-    
+
     // Objects to store account details by category
     const accountDetails = {
         bankAccounts: [],
@@ -1832,7 +1845,7 @@ function updateSummary() {
         otherAssets: [],
         liabilities: []
     };
-    
+
     // Collect all account values
     document.querySelectorAll('.account-input').forEach(input => {
         const value = parseFloat(input.value) || 0;
@@ -1872,14 +1885,14 @@ function updateSummary() {
             }
         }
     });
-    
+
     // Update main totals
     const totalAssetsEl = document.getElementById('totalAssets');
     const totalLiabilitiesEl = document.getElementById('totalLiabilities');
     const netPositionEl = document.getElementById('netPosition');
     const assetTotalEl = document.getElementById('assetTotal');
     const liabilityTotalEl = document.getElementById('liabilityTotal');
-    
+
     if (totalAssetsEl) totalAssetsEl.textContent = formatCurrency(totalAssets);
     if (totalLiabilitiesEl) totalLiabilitiesEl.textContent = formatCurrency(totalLiabilities);
     if (netPositionEl) {
@@ -1897,7 +1910,7 @@ function updateSummary() {
     }
     if (assetTotalEl) assetTotalEl.textContent = formatCurrency(totalAssets);
     if (liabilityTotalEl) liabilityTotalEl.textContent = formatCurrency(totalLiabilities);
-    
+
     // Update detailed breakdowns if they exist
     updateSummarySection('summaryBankAccounts', accountDetails.bankAccounts);
     updateSummarySection('summaryMerchantAccounts', accountDetails.merchantAccounts);
@@ -1910,15 +1923,15 @@ function updateSummary() {
 function updateSummarySection(containerId, accounts) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    
+
     if (accounts.length === 0) {
         container.innerHTML = '<div class="summary-empty">No entries</div>';
         return;
     }
-    
+
     let html = '';
     let subtotal = 0;
-    
+
     accounts.forEach(account => {
         const valueClass = account.value > 0 ? 'positive' : account.value < 0 ? 'negative' : 'zero';
         html += `
@@ -1929,7 +1942,7 @@ function updateSummarySection(containerId, accounts) {
         `;
         subtotal += account.value;
     });
-    
+
     container.innerHTML = html;
 }
 
@@ -1973,4 +1986,370 @@ function showMessage(text, type) {
             messageEl.classList.remove('active');
         }, 5000);
     }
+}
+
+// ========== REPORTS TAB FUNCTIONS ==========
+
+// Initialize Reports Tab
+function initializeReportsTab() {
+    // Populate store dropdown
+    const reportStoreSelect = document.getElementById('reportStoreSelect');
+    if (reportStoreSelect && allStores) {
+        reportStoreSelect.innerHTML = '<option value="">Select Store...</option>';
+        allStores.forEach(store => {
+            const option = document.createElement('option');
+            option.value = store.id;
+            option.textContent = `${store.name} (${store.code})`;
+            reportStoreSelect.appendChild(option);
+        });
+    }
+}
+
+// Load snapshots for selected store
+async function loadReportSnapshots() {
+    const storeId = document.getElementById('reportStoreSelect').value;
+    const typeFilter = document.getElementById('reportTypeFilter').value;
+    
+    if (!storeId) {
+        document.getElementById('reportSnapshotSelect').innerHTML = '<option value="">Select Store First...</option>';
+        document.getElementById('compareSnapshotSelect').innerHTML = '<option value="">Select Store First...</option>';
+        return;
+    }
+    
+    showLoading(true);
+    try {
+        // Get all snapshots for the store
+        const response = await fetch(`/api/wizard/store-snapshots/${storeId}?type=${typeFilter}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const snapshotSelect = document.getElementById('reportSnapshotSelect');
+            const compareSelect = document.getElementById('compareSnapshotSelect');
+            
+            snapshotSelect.innerHTML = '<option value="">Select Snapshot...</option>';
+            compareSelect.innerHTML = '<option value="">Select Snapshot to Compare...</option>';
+            
+            data.snapshots.forEach(snapshot => {
+                const status = snapshot.status === 'draft' ? ' [DRAFT]' : ' [PUBLISHED]';
+                const optionText = `${snapshot.snapshot_date}${status} - Net: ${formatCurrency(snapshot.net_position)}`;
+                
+                const option = document.createElement('option');
+                option.value = snapshot.id;
+                option.textContent = optionText;
+                option.dataset.snapshot = JSON.stringify(snapshot);
+                snapshotSelect.appendChild(option);
+                
+                const compareOption = option.cloneNode(true);
+                compareSelect.appendChild(compareOption);
+            });
+        }
+    } catch (error) {
+        showMessage('Failed to load snapshots: ' + error.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Load and display balance sheet
+async function loadBalanceSheet() {
+    const snapshotId = document.getElementById('reportSnapshotSelect').value;
+    
+    if (!snapshotId) {
+        document.getElementById('balanceSheetDisplay').innerHTML = `
+            <div class="balance-sheet-placeholder">
+                <p>Select a store and snapshot to view the balance sheet</p>
+            </div>
+        `;
+        return;
+    }
+    
+    showLoading(true);
+    try {
+        const response = await fetch(`/api/wizard/balance-sheet/${snapshotId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            currentSnapshot = data.balance_sheet;
+            displayBalanceSheet(currentSnapshot, comparisonMode ? compareSnapshot : null);
+        } else {
+            showMessage('Failed to load balance sheet: ' + data.error, 'error');
+        }
+    } catch (error) {
+        showMessage('Failed to load balance sheet: ' + error.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Display the balance sheet
+function displayBalanceSheet(snapshot, compareWith = null) {
+    const container = document.getElementById('balanceSheetDisplay');
+    
+    if (compareWith) {
+        container.innerHTML = generateComparisonView(snapshot, compareWith);
+    } else {
+        container.innerHTML = generateSingleBalanceSheet(snapshot);
+    }
+}
+
+// Generate single balance sheet HTML
+function generateSingleBalanceSheet(data) {
+    const statusClass = data.status === 'draft' ? 'status-draft' : 'status-published';
+    const statusText = data.status === 'draft' ? 'DRAFT' : 'PUBLISHED';
+    
+    let html = `
+        <div class="balance-sheet">
+            <div class="balance-sheet-header">
+                <div class="company-name">${data.store_name}</div>
+                <div class="statement-title">BALANCE SHEET</div>
+                <div class="statement-date">
+                    As of ${formatDate(data.snapshot_date)}
+                    <span class="statement-status ${statusClass}">${statusText}</span>
+                </div>
+            </div>
+            
+            <div class="balance-sheet-section">
+                <h3 class="section-title">ASSETS</h3>
+                
+                <div class="subsection">
+                    <h4 class="subsection-title">Current Assets</h4>
+                    ${generateAccountLines(data.assets.bank_accounts, 'Bank Accounts')}
+                    ${generateAccountLines(data.assets.merchant_accounts, 'Merchant Accounts')}
+                    ${generateAccountLines(data.assets.inventory, 'Inventory')}
+                    <div class="subtotal-line">
+                        <span class="subtotal-label">Total Current Assets</span>
+                        <span class="subtotal-value">${formatCurrency(data.assets.current_total)}</span>
+                    </div>
+                </div>
+                
+                ${data.assets.other_assets && data.assets.other_assets.length > 0 ? `
+                <div class="subsection">
+                    <h4 class="subsection-title">Other Assets</h4>
+                    ${generateAccountLines(data.assets.other_assets)}
+                    <div class="subtotal-line">
+                        <span class="subtotal-label">Total Other Assets</span>
+                        <span class="subtotal-value">${formatCurrency(data.assets.other_total)}</span>
+                    </div>
+                </div>
+                ` : ''}
+                
+                <div class="total-line total-assets">
+                    <span>TOTAL ASSETS</span>
+                    <span>${formatCurrency(data.total_assets)}</span>
+                </div>
+            </div>
+            
+            <div class="balance-sheet-section">
+                <h3 class="section-title">LIABILITIES</h3>
+                
+                <div class="subsection">
+                    <h4 class="subsection-title">Current Liabilities</h4>
+                    ${generateAccountLines(data.liabilities.current_liabilities)}
+                    <div class="subtotal-line">
+                        <span class="subtotal-label">Total Current Liabilities</span>
+                        <span class="subtotal-value">${formatCurrency(data.liabilities.current_total)}</span>
+                    </div>
+                </div>
+                
+                ${data.liabilities.long_term && data.liabilities.long_term.length > 0 ? `
+                <div class="subsection">
+                    <h4 class="subsection-title">Long-term Liabilities</h4>
+                    ${generateAccountLines(data.liabilities.long_term)}
+                    <div class="subtotal-line">
+                        <span class="subtotal-label">Total Long-term Liabilities</span>
+                        <span class="subtotal-value">${formatCurrency(data.liabilities.long_term_total)}</span>
+                    </div>
+                </div>
+                ` : ''}
+                
+                <div class="total-line total-liabilities">
+                    <span>TOTAL LIABILITIES</span>
+                    <span>${formatCurrency(data.total_liabilities)}</span>
+                </div>
+            </div>
+            
+            <div class="total-section">
+                <div class="net-position-line">
+                    <span>NET POSITION (EQUITY)</span>
+                    <span>${formatCurrency(data.net_position)}</span>
+                </div>
+            </div>
+            
+            ${data.ytd_sales || data.ytd_profit ? `
+            <div class="balance-sheet-section">
+                <h3 class="section-title">YEAR-TO-DATE PERFORMANCE</h3>
+                <div class="subsection">
+                    ${data.ytd_sales ? `
+                    <div class="account-line">
+                        <span class="account-name">YTD Sales</span>
+                        <span class="account-value">${formatCurrency(data.ytd_sales)}</span>
+                    </div>
+                    ` : ''}
+                    ${data.ytd_profit ? `
+                    <div class="account-line">
+                        <span class="account-name">YTD Profit</span>
+                        <span class="account-value">${formatCurrency(data.ytd_profit)}</span>
+                    </div>
+                    ` : ''}
+                    ${data.profit_margin ? `
+                    <div class="account-line">
+                        <span class="account-name">Profit Margin</span>
+                        <span class="account-value">${data.profit_margin.toFixed(2)}%</span>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+            ` : ''}
+            
+            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #dee2e6; text-align: center; color: #6c757d; font-size: 12px;">
+                Generated on ${new Date().toLocaleString()} | 
+                ${data.created_by ? `Prepared by: ${data.created_by} | ` : ''}
+                Snapshot ID: ${data.id}
+            </div>
+        </div>
+    `;
+    
+    return html;
+}
+
+// Generate account lines HTML
+function generateAccountLines(accounts, label = null) {
+    if (!accounts || accounts.length === 0) return '';
+    
+    let html = '';
+    if (label) {
+        html += `<div style="font-weight: 600; color: #6c757d; font-size: 13px; margin: 10px 0 5px 40px;">${label}</div>`;
+    }
+    
+    accounts.forEach(account => {
+        html += `
+            <div class="account-line">
+                <span class="account-name">${account.account_name}</span>
+                <span class="account-value">${formatCurrency(Math.abs(account.balance))}</span>
+            </div>
+        `;
+    });
+    
+    return html;
+}
+
+// Generate comparison view
+function generateComparisonView(snapshot1, snapshot2) {
+    let html = `
+        <div class="balance-sheet-comparison">
+            <div class="comparison-column">
+                <div class="comparison-header">
+                    <div class="comparison-label">Primary Snapshot</div>
+                    <div class="comparison-date">${formatDate(snapshot1.snapshot_date)}</div>
+                    <div class="statement-status ${snapshot1.status === 'draft' ? 'status-draft' : 'status-published'}">
+                        ${snapshot1.status === 'draft' ? 'DRAFT' : 'PUBLISHED'}
+                    </div>
+                </div>
+                ${generateComparisonContent(snapshot1, snapshot2, false)}
+            </div>
+            
+            <div class="comparison-column">
+                <div class="comparison-header">
+                    <div class="comparison-label">Comparison Snapshot</div>
+                    <div class="comparison-date">${formatDate(snapshot2.snapshot_date)}</div>
+                    <div class="statement-status ${snapshot2.status === 'draft' ? 'status-draft' : 'status-published'}">
+                        ${snapshot2.status === 'draft' ? 'DRAFT' : 'PUBLISHED'}
+                    </div>
+                </div>
+                ${generateComparisonContent(snapshot2, snapshot1, true)}
+            </div>
+        </div>
+    `;
+    
+    return html;
+}
+
+// Generate comparison content
+function generateComparisonContent(primary, compare, isSecondColumn) {
+    // This would generate the comparison content with differences highlighted
+    // For brevity, returning simplified version
+    return generateSingleBalanceSheet(primary).replace('balance-sheet', 'comparison-sheet');
+}
+
+// Toggle comparison mode
+function toggleComparison() {
+    comparisonMode = !comparisonMode;
+    const comparisonControls = document.getElementById('comparisonControls');
+    const toggleText = document.getElementById('compareToggleText');
+    
+    if (comparisonMode) {
+        comparisonControls.style.display = 'block';
+        toggleText.textContent = 'Disable Comparison';
+    } else {
+        comparisonControls.style.display = 'none';
+        toggleText.textContent = 'Enable Comparison';
+        compareSnapshot = null;
+        if (currentSnapshot) {
+            displayBalanceSheet(currentSnapshot);
+        }
+    }
+}
+
+// Load comparison
+async function loadComparison() {
+    const compareId = document.getElementById('compareSnapshotSelect').value;
+    
+    if (!compareId) {
+        compareSnapshot = null;
+        if (currentSnapshot) {
+            displayBalanceSheet(currentSnapshot);
+        }
+        return;
+    }
+    
+    showLoading(true);
+    try {
+        const response = await fetch(`/api/wizard/balance-sheet/${compareId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            compareSnapshot = data.balance_sheet;
+            if (currentSnapshot) {
+                displayBalanceSheet(currentSnapshot, compareSnapshot);
+            }
+        }
+    } catch (error) {
+        showMessage('Failed to load comparison snapshot: ' + error.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Export balance sheet as PDF
+function exportBalanceSheet() {
+    if (!currentSnapshot) {
+        showMessage('Please select a snapshot first', 'error');
+        return;
+    }
+    
+    // This would typically use a library like jsPDF or html2pdf
+    // For now, just trigger print
+    window.print();
+    showMessage('Use your browser\'s print dialog to save as PDF', 'info');
+}
+
+// Print balance sheet
+function printBalanceSheet() {
+    if (!currentSnapshot) {
+        showMessage('Please select a snapshot first', 'error');
+        return;
+    }
+    
+    window.print();
+}
+
+// Format date helper
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
 }

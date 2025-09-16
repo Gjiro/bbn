@@ -955,3 +955,276 @@ def get_intercompany_pairs():
         
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+@wizard_bp.route("/store-snapshots/<int:store_id>", methods=["GET"])
+def get_store_snapshots(store_id):
+    """Get all snapshots for a specific store with filtering"""
+    try:
+        type_filter = request.args.get('type', 'all')
+        
+        # Build query
+        query = Snapshot.query.filter_by(store_id=store_id)
+        
+        # Apply type filter
+        if type_filter == 'completed':
+            query = query.filter_by(status='completed')
+        elif type_filter == 'draft':
+            query = query.filter_by(status='draft')
+        
+        # Order by date descending
+        snapshots = query.order_by(desc(Snapshot.snapshot_date), desc(Snapshot.id)).all()
+        
+        snapshots_list = []
+        for snapshot in snapshots:
+            snapshots_list.append({
+                "id": snapshot.id,
+                "snapshot_date": snapshot.snapshot_date.isoformat() if snapshot.snapshot_date else None,
+                "status": snapshot.status,
+                "total_assets": float(snapshot.total_assets) if snapshot.total_assets else 0,
+                "total_liabilities": float(snapshot.total_liabilities) if snapshot.total_liabilities else 0,
+                "net_position": float(snapshot.net_position) if snapshot.net_position else 0,
+                "ytd_sales": float(snapshot.ytd_sales) if snapshot.ytd_sales else 0,
+                "ytd_profit": float(snapshot.ytd_profit) if snapshot.ytd_profit else 0,
+                "created_at": snapshot.created_at.isoformat() if snapshot.created_at else None,
+                "updated_at": snapshot.updated_at.isoformat() if snapshot.updated_at else None
+            })
+        
+        return jsonify({
+            "success": True,
+            "snapshots": snapshots_list
+        })
+        
+    except Exception as e:
+        print(f"Error getting store snapshots: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@wizard_bp.route("/balance-sheet/<int:snapshot_id>", methods=["GET"])
+def get_balance_sheet(snapshot_id):
+    """Get complete balance sheet data for a snapshot"""
+    try:
+        # Get snapshot with store info
+        snapshot = Snapshot.query.get(snapshot_id)
+        if not snapshot:
+            return jsonify({"success": False, "error": "Snapshot not found"}), 404
+        
+        store = Store.query.get(snapshot.store_id)
+        
+        # Get all account balances with account details
+        balances = db.session.query(
+            AccountBalance,
+            Account,
+            AccountType,
+            Bank
+        ).join(
+            Account, AccountBalance.account_id == Account.id
+        ).join(
+            AccountType, Account.account_type_id == AccountType.id
+        ).outerjoin(
+            Bank, Account.bank_id == Bank.id
+        ).filter(
+            AccountBalance.snapshot_id == snapshot_id
+        ).order_by(
+            AccountType.sort_order,
+            Account.account_name
+        ).all()
+        
+        # Organize data for balance sheet
+        assets = {
+            "bank_accounts": [],
+            "merchant_accounts": [],
+            "inventory": [],
+            "other_assets": [],
+            "current_total": Decimal('0'),
+            "other_total": Decimal('0')
+        }
+        
+        liabilities = {
+            "current_liabilities": [],
+            "long_term": [],
+            "current_total": Decimal('0'),
+            "long_term_total": Decimal('0')
+        }
+        
+        for balance, account, account_type, bank in balances:
+            account_data = {
+                "account_id": account.id,
+                "account_name": account.account_name,
+                "account_number": account.account_number,
+                "balance": float(balance.balance),
+                "type": account_type.name,
+                "bank": bank.name if bank else None
+            }
+            
+            if account_type.category == 'Asset':
+                if account_type.name in ['Bank Checking', 'Bank Savings']:
+                    assets["bank_accounts"].append(account_data)
+                    assets["current_total"] += abs(balance.balance)
+                elif account_type.name in ['Merchant Account', 'Points']:
+                    assets["merchant_accounts"].append(account_data)
+                    assets["current_total"] += abs(balance.balance)
+                elif account_type.name == 'Inventory':
+                    assets["inventory"].append(account_data)
+                    assets["current_total"] += abs(balance.balance)
+                else:
+                    assets["other_assets"].append(account_data)
+                    assets["other_total"] += abs(balance.balance)
+            
+            elif account_type.category == 'Liability':
+                # Classify as current or long-term based on type
+                if account_type.name in ['Credit Card', 'Vendor Payable', 'Sales Tax Payable',
+                                        'Pending Refunds', 'Pending Shipments', 'Management Fee',
+                                        'Advertising Payable', 'Shipping Payable', 'Container Duties']:
+                    liabilities["current_liabilities"].append(account_data)
+                    liabilities["current_total"] += abs(balance.balance)
+                else:
+                    liabilities["long_term"].append(account_data)
+                    liabilities["long_term_total"] += abs(balance.balance)
+        
+        # Convert decimals to float for JSON serialization
+        assets["current_total"] = float(assets["current_total"])
+        assets["other_total"] = float(assets["other_total"])
+        liabilities["current_total"] = float(liabilities["current_total"])
+        liabilities["long_term_total"] = float(liabilities["long_term_total"])
+        
+        balance_sheet = {
+            "id": snapshot.id,
+            "store_id": snapshot.store_id,
+            "store_name": store.name if store else "Unknown",
+            "store_code": store.code if store else "N/A",
+            "snapshot_date": snapshot.snapshot_date.isoformat() if snapshot.snapshot_date else None,
+            "status": snapshot.status,
+            "assets": assets,
+            "liabilities": liabilities,
+            "total_assets": float(snapshot.total_assets) if snapshot.total_assets else 0,
+            "total_liabilities": float(snapshot.total_liabilities) if snapshot.total_liabilities else 0,
+            "net_position": float(snapshot.net_position) if snapshot.net_position else 0,
+            "ytd_sales": float(snapshot.ytd_sales) if snapshot.ytd_sales else 0,
+            "ytd_profit": float(snapshot.ytd_profit) if snapshot.ytd_profit else 0,
+            "profit_margin": float(snapshot.profit_margin) if snapshot.profit_margin else 0,
+            "created_by": snapshot.created_by,
+            "created_at": snapshot.created_at.isoformat() if snapshot.created_at else None,
+            "updated_at": snapshot.updated_at.isoformat() if snapshot.updated_at else None
+        }
+        
+        return jsonify({
+            "success": True,
+            "balance_sheet": balance_sheet
+        })
+        
+    except Exception as e:
+        print(f"Error getting balance sheet: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@wizard_bp.route("/export-balance-sheet/<int:snapshot_id>", methods=["GET"])
+def export_balance_sheet(snapshot_id):
+    """Export balance sheet as CSV or JSON"""
+    try:
+        format_type = request.args.get('format', 'json')
+        
+        # Get balance sheet data
+        response = get_balance_sheet(snapshot_id)
+        data = response[0].get_json()
+        
+        if not data['success']:
+            return response
+        
+        balance_sheet = data['balance_sheet']
+        
+        if format_type == 'csv':
+            # Create CSV export
+            import csv
+            from io import StringIO
+            
+            output = StringIO()
+            writer = csv.writer(output)
+            
+            # Write header
+            writer.writerow([f"{balance_sheet['store_name']} - Balance Sheet"])
+            writer.writerow([f"As of {balance_sheet['snapshot_date']}"])
+            writer.writerow([f"Status: {balance_sheet['status'].upper()}"])
+            writer.writerow([])
+            
+            # Assets section
+            writer.writerow(["ASSETS"])
+            writer.writerow(["Account", "Amount"])
+            
+            # Bank accounts
+            if balance_sheet['assets']['bank_accounts']:
+                writer.writerow(["Bank Accounts", ""])
+                for account in balance_sheet['assets']['bank_accounts']:
+                    writer.writerow([f"  {account['account_name']}", f"${abs(account['balance']):.2f}"])
+            
+            # Merchant accounts
+            if balance_sheet['assets']['merchant_accounts']:
+                writer.writerow(["Merchant Accounts", ""])
+                for account in balance_sheet['assets']['merchant_accounts']:
+                    writer.writerow([f"  {account['account_name']}", f"${abs(account['balance']):.2f}"])
+            
+            # Inventory
+            if balance_sheet['assets']['inventory']:
+                writer.writerow(["Inventory", ""])
+                for account in balance_sheet['assets']['inventory']:
+                    writer.writerow([f"  {account['account_name']}", f"${abs(account['balance']):.2f}"])
+            
+            # Other assets
+            if balance_sheet['assets']['other_assets']:
+                writer.writerow(["Other Assets", ""])
+                for account in balance_sheet['assets']['other_assets']:
+                    writer.writerow([f"  {account['account_name']}", f"${abs(account['balance']):.2f}"])
+            
+            writer.writerow(["TOTAL ASSETS", f"${balance_sheet['total_assets']:.2f}"])
+            writer.writerow([])
+            
+            # Liabilities section
+            writer.writerow(["LIABILITIES"])
+            
+            # Current liabilities
+            if balance_sheet['liabilities']['current_liabilities']:
+                writer.writerow(["Current Liabilities", ""])
+                for account in balance_sheet['liabilities']['current_liabilities']:
+                    writer.writerow([f"  {account['account_name']}", f"${abs(account['balance']):.2f}"])
+            
+            # Long-term liabilities
+            if balance_sheet['liabilities']['long_term']:
+                writer.writerow(["Long-term Liabilities", ""])
+                for account in balance_sheet['liabilities']['long_term']:
+                    writer.writerow([f"  {account['account_name']}", f"${abs(account['balance']):.2f}"])
+            
+            writer.writerow(["TOTAL LIABILITIES", f"${balance_sheet['total_liabilities']:.2f}"])
+            writer.writerow([])
+            
+            # Net position
+            writer.writerow(["NET POSITION (EQUITY)", f"${balance_sheet['net_position']:.2f}"])
+            
+            # Performance metrics if available
+            if balance_sheet.get('ytd_sales') or balance_sheet.get('ytd_profit'):
+                writer.writerow([])
+                writer.writerow(["YEAR-TO-DATE PERFORMANCE"])
+                if balance_sheet.get('ytd_sales'):
+                    writer.writerow(["YTD Sales", f"${balance_sheet['ytd_sales']:.2f}"])
+                if balance_sheet.get('ytd_profit'):
+                    writer.writerow(["YTD Profit", f"${balance_sheet['ytd_profit']:.2f}"])
+                if balance_sheet.get('profit_margin'):
+                    writer.writerow(["Profit Margin", f"{balance_sheet['profit_margin']:.2f}%"])
+            
+            # Create response
+            from flask import Response
+            
+            csv_output = output.getvalue()
+            filename = f"balance_sheet_{balance_sheet['store_code']}_{balance_sheet['snapshot_date']}.csv"
+            
+            return Response(
+                csv_output,
+                mimetype='text/csv',
+                headers={'Content-Disposition': f'attachment; filename={filename}'}
+            )
+        
+        else:
+            # Return JSON
+            return jsonify(data)
+    
+    except Exception as e:
+        print(f"Error exporting balance sheet: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500

@@ -1239,6 +1239,359 @@ button:hover {
     font-size: 16px;
 }
 
+/* ========== INVENTORY HELPER STYLES ========== */
+.btn-helper {
+    background: #4ecdc4;
+    color: white;
+    font-size: 16px;
+    padding: 4px 8px;
+}
+
+.btn-helper:hover {
+    background: #3fb8af;
+}
+
+.inventory-helper-section {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.inventory-calc-option {
+    padding: 15px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.inventory-calc-option h5 {
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+    font-size: 16px;
+}
+
+.result-box {
+    min-height: 40px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+.total-inventory-value {
+    padding: 15px;
+    background: #e8f5e9;
+    border: 2px solid #4caf50;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.total-inventory-value strong {
+    color: #2e7d32;
+    font-size: 18px;
+}
+
+.helpers-container {
+    padding: 20px;
+}
+
+.helper-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #4ecdc4;
+}
+
+.helper-section h3 {
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+}
+
+.helper-section ul, .helper-section ol {
+    line-height: 1.8;
+}
+
+/* ========== REPORTS TAB STYLES ========== */
+.reports-container {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.reports-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.reports-title {
+    color: white;
+    margin: 0 0 15px 0;
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.reports-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.control-group label {
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.control-group select {
+    min-width: 150px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background: white;
+}
+
+.comparison-controls {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 2px dashed #667eea;
+}
+
+/* Balance Sheet Display Styles */
+.balance-sheet-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+    min-height: 600px;
+}
+
+.balance-sheet-placeholder {
+    padding: 60px;
+    text-align: center;
+    color: #999;
+    font-size: 16px;
+}
+
+.balance-sheet {
+    padding: 30px;
+    font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+.balance-sheet-header {
+    text-align: center;
+    margin-bottom: 40px;
+    border-bottom: 3px double #333;
+    padding-bottom: 20px;
+}
+
+.company-name {
+    font-size: 28px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.statement-title {
+    font-size: 20px;
+    color: #34495e;
+    margin-bottom: 5px;
+}
+
+.statement-date {
+    font-size: 16px;
+    color: #7f8c8d;
+}
+
+.statement-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.status-draft {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-published {
+    background: #d4edda;
+    color: #155724;
+}
+
+/* Balance Sheet Sections */
+.balance-sheet-section {
+    margin-bottom: 40px;
+}
+
+.balance-sheet-section .section-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+.subsection {
+    margin-bottom: 20px;
+}
+
+.subsection-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #34495e;
+    margin-bottom: 10px;
+    padding-left: 20px;
+    text-transform: uppercase;
+}
+
+.account-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    padding-left: 40px;
+    border-bottom: 1px dotted #ecf0f1;
+}
+
+.account-line:hover {
+    background: #f8f9fa;
+}
+
+.account-name {
+    flex: 1;
+    color: #495057;
+    font-size: 14px;
+}
+
+.account-value {
+    font-weight: 500;
+    font-size: 14px;
+    min-width: 120px;
+    text-align: right;
+}
+
+.subtotal-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    padding-left: 20px;
+    font-weight: 600;
+    border-top: 1px solid #dee2e6;
+    margin-top: 10px;
+}
+
+.subtotal-label {
+    color: #2c3e50;
+}
+
+.subtotal-value {
+    color: #2c3e50;
+    min-width: 120px;
+    text-align: right;
+}
+
+.total-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 3px double #333;
+}
+
+.total-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.total-assets {
+    color: #27ae60;
+}
+
+.total-liabilities {
+    color: #e74c3c;
+}
+
+.net-position-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    margin-top: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* Comparison Mode */
+.balance-sheet-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.comparison-column {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.comparison-header {
+    text-align: center;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.comparison-label {
+    font-size: 12px;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.comparison-date {
+    font-size: 16px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-top: 5px;
+}
+
+.comparison-difference {
+    color: #3498db;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+.difference-positive {
+    color: #27ae60;
+}
+
+.difference-negative {
+    color: #e74c3c;
+}
+
 /* ========== RESPONSIVE DESIGN ========== */
 @media (max-width: 1200px) {
     .main-layout {
@@ -1251,7 +1604,7 @@ button:hover {
         max-height: none;
         margin-top: 20px;
     }
-    
+
     .summary-details {
         max-height: 300px;
     }
@@ -1291,20 +1644,20 @@ button:hover {
     .summary-panel {
         padding: 15px;
     }
-    
+
     .summary-section-header {
         padding: 10px 12px;
         font-size: 13px;
     }
-    
+
     .summary-item {
         font-size: 12px;
     }
-    
+
     .net-position {
         padding: 15px;
     }
-    
+
     .net-position div:last-child {
         font-size: 24px !important;
     }
@@ -1315,6 +1668,33 @@ button:hover {
 
     .stores-breakdown-grid {
         grid-template-columns: 1fr;
+    }
+
+    /* Reports Tab Responsive */
+    .reports-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .control-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .control-group select {
+        flex: 1;
+    }
+
+    .balance-sheet-comparison {
+        grid-template-columns: 1fr;
+    }
+
+    .balance-sheet {
+        padding: 15px;
+    }
+
+    .account-line {
+        padding-left: 20px;
     }
 }
 
@@ -1347,79 +1727,25 @@ button:hover {
     .elite-kpi-card .kpi-value {
         font-size: 24px;
     }
+}
 
-    /* ========== INVENTORY HELPER STYLES ========== */
-    .btn-helper {
-        background: #4ecdc4;
-        color: white;
-        font-size: 16px;
-        padding: 4px 8px;
+/* ========== PRINT STYLES ========== */
+@media print {
+    .reports-header,
+    .comparison-controls {
+        display: none !important;
     }
 
-    .btn-helper:hover {
-        background: #3fb8af;
+    .balance-sheet-container {
+        box-shadow: none;
+        border: none;
     }
 
-    .inventory-helper-section {
-        padding: 15px;
-        background: #f8f9fa;
-        border-radius: 6px;
-        margin-bottom: 20px;
+    .balance-sheet {
+        padding: 0;
     }
 
-    .inventory-calc-option {
-        padding: 15px;
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        margin-bottom: 15px;
-    }
-
-    .inventory-calc-option h5 {
-        margin: 0 0 15px 0;
-        color: #2c3e50;
-        font-size: 16px;
-    }
-
-    .result-box {
-        min-height: 40px;
-        padding: 10px;
-        background: #f8f9fa;
-        border-radius: 4px;
-        margin-top: 10px;
-        font-size: 13px;
-    }
-
-    .total-inventory-value {
-        padding: 15px;
-        background: #e8f5e9;
-        border: 2px solid #4caf50;
-        border-radius: 6px;
-        font-size: 14px;
-    }
-
-    .total-inventory-value strong {
-        color: #2e7d32;
-        font-size: 18px;
-    }
-
-    .helpers-container {
-        padding: 20px;
-    }
-
-    .helper-section {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-        border-left: 4px solid #4ecdc4;
-    }
-
-    .helper-section h3 {
-        margin: 0 0 15px 0;
-        color: #2c3e50;
-    }
-
-    .helper-section ul, .helper-section ol {
-        line-height: 1.8;
+    .account-line:hover {
+        background: none;
     }
 }
