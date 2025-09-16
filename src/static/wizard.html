@@ -3,2051 +3,346 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Balance Sheet Entry</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
-            padding-top: 120px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            background: #2c3e50;
-            color: white;
-            padding: 20px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-
-        .header h1 {
-            font-size: 24px;
-            margin-bottom: 15px;
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-            justify-content: space-between;
-        }
-
-        .controls-left {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-            flex: 1;
-        }
-
-        .controls-right {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .controls select, .controls input[type="date"] {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-            background: white;
-        }
-
-        .controls button {
-            padding: 8px 16px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .controls button:hover {
-            background: #2980b9;
-        }
-
-        .bulk-import-btn {
-            background: #9b59b6;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-left: 10px;
-        }
-
-        .bulk-import-btn:hover {
-            background: #8e44ad;
-        }
-
-        .btn-header-draft {
-            background: #f39c12;
-            color: white;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .btn-header-draft:hover {
-            background: #e67e22;
-        }
-
-        .btn-header-publish {
-            background: #27ae60;
-            color: white;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .btn-header-publish:hover {
-            background: #229954;
-        }
-
-        .draft-indicator {
-            background: #f39c12;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            display: none;
-        }
-
-        .draft-indicator.active {
-            display: inline-block;
-        }
-
-        .main-content {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-
-        .entries-panel {
-            flex: 2;
-        }
-
-        .summary-panel {
-            flex: 1;
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 6px;
-            height: fit-content;
-            position: sticky;
-            top: 140px;
-        }
-
-        .section {
-            margin-bottom: 30px;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .section-title {
-            font-size: 18px;
-            color: #2c3e50;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #3498db;
-        }
-
-        .account-group {
-            margin-bottom: 20px;
-        }
-
-        .account-group-title {
-            font-size: 14px;
-            color: #7f8c8d;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .account-row {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            margin-bottom: 4px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            gap: 10px;
-        }
-
-        .account-row:hover {
-            background: #e9ecef;
-        }
-
-        .account-label {
-            flex: 1;
-            font-size: 14px;
-            color: #495057;
-        }
-
-        .account-input {
-            width: 150px;
-            padding: 6px 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            text-align: right;
-            font-size: 14px;
-        }
-
-        .account-input:focus {
-            outline: none;
-            border-color: #3498db;
-        }
-
-        .account-input.has-value {
-            background: #e8f5e9;
-            border-color: #4caf50;
-        }
-
-        .delete-account-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 12px;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
-
-        .delete-account-btn:hover {
-            opacity: 1;
-            background: #c0392b;
-        }
-
-        .summary-section {
-            margin-bottom: 20px;
-        }
-
-        .summary-title {
-            font-size: 16px;
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .summary-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-            font-size: 14px;
-        }
-
-        .summary-total {
-            padding-top: 10px;
-            margin-top: 10px;
-            border-top: 2px solid #ddd;
-            font-weight: 600;
-        }
-
-        .total-assets {
-            color: #27ae60;
-        }
-
-        .total-liabilities {
-            color: #e74c3c;
-        }
-
-        .net-position {
-            color: #2c3e50;
-            font-size: 18px;
-            padding: 10px;
-            background: #ecf0f1;
-            border-radius: 4px;
-            margin-top: 10px;
-        }
-
-        .actions {
-            padding: 20px;
-            background: #f8f9fa;
-            border-top: 1px solid #dee2e6;
-            display: flex;
-            gap: 10px;
-            justify-content: space-between;
-        }
-
-        .action-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .btn-draft {
-            background: #f39c12;
-            color: white;
-        }
-
-        .btn-draft:hover {
-            background: #e67e22;
-        }
-
-        .btn-publish {
-            background: #27ae60;
-            color: white;
-        }
-
-        .btn-publish:hover {
-            background: #229954;
-        }
-
-        .btn-secondary {
-            background: #95a5a6;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #7f8c8d;
-        }
-
-        .btn-primary {
-            background: #3498db;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2980b9;
-        }
-
-        .btn-danger {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c0392b;
-        }
-
-        .loading {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-        }
-
-        .loading.active {
-            display: flex;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid white;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .message {
-            padding: 10px 15px;
-            margin: 10px 20px;
-            border-radius: 4px;
-            display: none;
-            position: fixed;
-            top: 130px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1001;
-            min-width: 300px;
-            text-align: center;
-        }
-
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .message.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
-        .message.active {
-            display: block;
-        }
-
-        .draft-list {
-            background: #fff3cd;
-            border: 1px solid #ffeeba;
-            padding: 15px;
-            margin: 10px 20px;
-            border-radius: 4px;
-            display: none;
-            margin-top: 140px;
-        }
-
-        .draft-list.active {
-            display: block;
-        }
-
-        .draft-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px;
-            margin-bottom: 5px;
-            background: white;
-            border-radius: 4px;
-        }
-
-        .draft-item button {
-            padding: 4px 8px;
-            font-size: 12px;
-        }
-
-        .add-account-btn {
-            background: #27ae60;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .add-account-btn:hover {
-            background: #229954;
-        }
-
-        .intercompany-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .intercompany-btn:hover {
-            background: #c0392b;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            width: 90%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .modal-header h3, .modal-header h2 {
-            margin: 0;
-            color: #2c3e50;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .modal-close:hover {
-            color: #333;
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            padding: 20px;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #555;
-            font-weight: 500;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
-        }
-
-        .header-divider {
-            width: 1px;
-            height: 30px;
-            background: rgba(255, 255, 255, 0.3);
-            margin: 0 10px;
-        }
-
-        .date-note {
-            font-size: 11px;
-            color: #999;
-            margin-top: 2px;
-        }
-
-        /* Bulk Import Modal Styles */
-        #bulkImportModal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #bulkImportModal.active {
-            display: flex;
-        }
-
-        .bulk-modal-content {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            width: 90%;
-            max-width: 900px;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .bulk-modal-header {
-            padding: 20px;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .bulk-modal-body {
-            padding: 20px;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .bulk-modal-footer {
-            padding: 20px;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .import-textarea {
-            width: 100%;
-            min-height: 300px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            resize: vertical;
-        }
-
-        .format-help {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            font-size: 13px;
-        }
-
-        .preview-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-            margin-top: 20px;
-        }
-
-        .preview-table th {
-            background: #f8f9fa;
-            padding: 8px;
-            text-align: left;
-            border-bottom: 2px solid #ddd;
-        }
-
-        .preview-table td {
-            padding: 6px 8px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .preview-table tr:hover {
-            background: #f8f9fa;
-        }
-
-        .status-badge {
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-        .status-new {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .import-stats {
-            display: flex;
-            gap: 20px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 4px;
-        }
-
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .stat-number {
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .draft-status-badge {
-            background: #f39c12;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
-            margin-left: 10px;
-        }
-        
-        .draft-info-panel {
-            background: #fff3cd;
-            padding: 10px;
-            border-radius: 4px;
-            border: 1px solid #ffeeba;
-            margin-bottom: 15px;
-        }
-    </style>
+    <title>Elite Era Balance Sheet System</title>
+    <link rel="stylesheet" href="wizard.css">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Balance Sheet Entry</h1>
-            <div class="controls">
+            <h1>💼 Elite Era Balance Sheet System</h1>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('dashboard')">🌟 ELITE ERA DASHBOARD</button>
+            <button class="tab" onclick="switchTab('entry')">📝 Balance Entry</button>
+            <button class="tab" onclick="switchTab('settings')">⚙️ Settings & Management</button>
+            <button class="tab" onclick="switchTab('reports')">📊 Reports</button>
+        </div>
+
+        <!-- Elite Era Dashboard Tab -->
+        <div id="dashboardTab" class="tab-content active">
+            <!-- Main Dashboard Header -->
+            <div class="elite-dashboard-header">
+                <h2 class="elite-title">🌟 ELITE ERA CONSOLIDATED POSITION</h2>
+                <p class="elite-subtitle">Real-time financial overview across all stores</p>
+                <div class="last-updated" id="lastUpdated">Last updated: Loading...</div>
+            </div>
+
+            <!-- Main KPI Cards -->
+            <div class="elite-kpi-grid">
+                <div class="elite-kpi-card total-card">
+                    <div class="kpi-icon">💰</div>
+                    <div class="kpi-label">TOTAL ASSETS</div>
+                    <div class="kpi-value" id="eliteTotalAssets">$0.00</div>
+                    <div class="kpi-trend positive" id="assetsTrend">↑ Loading...</div>
+                </div>
+
+                <div class="elite-kpi-card liability-card">
+                    <div class="kpi-icon">💳</div>
+                    <div class="kpi-label">TOTAL LIABILITIES</div>
+                    <div class="kpi-value" id="eliteTotalLiabilities">$0.00</div>
+                    <div class="kpi-trend negative" id="liabilitiesTrend">↓ Loading...</div>
+                </div>
+
+                <div class="elite-kpi-card net-position-card">
+                    <div class="kpi-icon">🎯</div>
+                    <div class="kpi-label">NET POSITION</div>
+                    <div class="kpi-value highlight" id="eliteNetPosition">$0.00</div>
+                    <div class="kpi-trend" id="netPositionTrend">↑ Loading...</div>
+                </div>
+
+                <div class="elite-kpi-card profit-card">
+                    <div class="kpi-icon">📈</div>
+                    <div class="kpi-label">YTD PROFIT</div>
+                    <div class="kpi-value" id="eliteYtdProfit">$0.00</div>
+                    <div class="kpi-trend positive" id="profitTrend">↑ Loading...</div>
+                </div>
+            </div>
+
+            <!-- Store Breakdown Section -->
+            <div class="elite-stores-section">
+                <h3 class="section-title">📊 Store Breakdown</h3>
+                <div class="stores-breakdown-grid" id="storesBreakdownGrid">
+                    <!-- Store cards will be dynamically populated here -->
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="elite-actions">
+                <button class="btn btn-primary" onclick="refreshDashboard()">🔄 Refresh Dashboard</button>
+                <button class="btn btn-success" onclick="switchTab('entry')">➕ New Balance Entry</button>
+                <button class="btn btn-warning" onclick="exportDashboard()">📥 Export Report</button>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="elite-charts-section">
+                <div class="chart-container">
+                    <h3>Asset Distribution by Store</h3>
+                    <canvas id="assetChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>30-Day Trend</h3>
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Entry Tab -->
+        <div id="entryTab" class="tab-content">
+            <div class="top-controls">
                 <div class="controls-left">
                     <select id="storeSelect">
                         <option value="">Select Store...</option>
                     </select>
-                    <div>
-                        <input type="date" id="snapshotDate">
-                        <div class="date-note">Any date allowed</div>
-                    </div>
-                    <button onclick="loadDrafts()">My Drafts</button>
-                    <button onclick="loadPreviousSnapshot()">Load Previous</button>
-                    <button onclick="clearAll()">Clear All</button>
-                    <button class="bulk-import-btn" onclick="openBulkImport()">📋 Bulk Import</button>
-                    <span class="draft-indicator" id="draftIndicator">DRAFT</span>
+                    <input type="date" id="snapshotDate">
+                    <button onclick="loadPreviousSnapshot()">📋 Load Previous</button>
+                    <button onclick="loadDrafts()">📂 My Drafts</button>
+                    <button onclick="clearAll()">🗑️ Clear All</button>
                 </div>
                 <div class="controls-right">
-                    <button class="btn-header-draft" onclick="saveDraft()">💾 Save as Draft</button>
-                    <div class="header-divider"></div>
-                    <button class="btn-header-publish" onclick="publishSnapshot()">✓ Publish Final</button>
+                    <button class="btn-warning" onclick="saveDraft()">💾 Save Draft</button>
+                    <button class="btn-success" onclick="publishSnapshot()">✅ Publish</button>
                 </div>
             </div>
-        </div>
 
-        <div class="message" id="message"></div>
-        <div class="draft-list" id="draftList"></div>
+            <div class="message" id="message"></div>
 
-        <div class="main-content">
-            <div class="entries-panel">
-                <div class="section">
-                    <div class="section-header">
-                        <h2 class="section-title">Bank & Cash Accounts</h2>
-                        <div>
-                            <button class="add-account-btn" onclick="openAddAccountModal()">+ Add Account</button>
-                            <button class="intercompany-btn" onclick="openIntercompanyModal()">+ Intercompany</button>
+            <div class="main-layout">
+                <div class="entries-panel">
+                    <!-- Assets Section -->
+                    <div class="category-section">
+                        <div class="category-header assets" onclick="toggleCategory('assets')">
+                            <div class="category-title">
+                                <span class="collapse-icon">▼</span>
+                                💰 ASSETS
+                            </div>
+                            <div class="category-total" id="assetTotal">$0.00</div>
+                        </div>
+                        <div class="category-content" id="assetsContent">
+                            <!-- Bank Accounts -->
+                            <div class="account-group">
+                                <div class="account-group-title">
+                                    Bank Accounts
+                                    <button class="btn-small" onclick="addAccountToGroup('bank')">+ Add</button>
+                                </div>
+                                <div id="bankAccounts"></div>
+                            </div>
+                            <!-- Merchant Accounts -->
+                            <div class="account-group">
+                                <div class="account-group-title">
+                                    Merchant Accounts
+                                    <button class="btn-small" onclick="addAccountToGroup('merchant')">+ Add</button>
+                                </div>
+                                <div id="merchantAccounts"></div>
+                            </div>
+                            <!-- Inventory -->
+                            <div class="account-group">
+                                <div class="account-group-title">
+                                    Inventory
+                                    <button class="btn-small" onclick="addAccountToGroup('inventory')">+ Add</button>
+                                </div>
+                                <div id="inventory"></div>
+                            </div>
+                            <!-- Other Assets -->
+                            <div class="account-group">
+                                <div class="account-group-title">
+                                    Other Assets
+                                    <button class="btn-small" onclick="addAccountToGroup('other-assets')">+ Add</button>
+                                </div>
+                                <div id="receivables"></div>
+                            </div>
                         </div>
                     </div>
-                    <div id="bankAccounts"></div>
+
+                    <!-- Liabilities Section -->
+                    <div class="category-section">
+                        <div class="category-header liabilities" onclick="toggleCategory('liabilities')">
+                            <div class="category-title">
+                                <span class="collapse-icon">▼</span>
+                                💳 LIABILITIES
+                            </div>
+                            <div class="category-total" id="liabilityTotal">$0.00</div>
+                        </div>
+                        <div class="category-content" id="liabilitiesContent">
+                            <div class="account-group">
+                                <div class="account-group-title">
+                                    Payables & Obligations
+                                    <button class="btn-small" onclick="addAccountToGroup('payables')">+ Add</button>
+                                </div>
+                                <div id="liabilities"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="section">
-                    <div class="section-header">
-                        <h2 class="section-title">Merchant & Receivables</h2>
-                        <button class="add-account-btn" onclick="openAddAccountModal()">+ Add Account</button>
+                <!-- Enhanced Summary Panel with Detailed Breakdown -->
+                <div class="summary-panel">
+                    <h3 class="summary-title">📊 Balance Sheet Summary</h3>
+                    
+                    <!-- Net Position at Top -->
+                    <div class="net-position">
+                        <div>NET POSITION</div>
+                        <div id="netPosition" style="font-size: 24px; font-weight: bold;">$0.00</div>
                     </div>
-                    <div id="merchantAccounts"></div>
-                </div>
-
-                <div class="section">
-                    <div class="section-header">
-                        <h2 class="section-title">Inventory</h2>
-                        <button class="add-account-btn" onclick="openAddAccountModal()">+ Add Inventory</button>
+                    
+                    <!-- Assets Breakdown Section -->
+                    <div class="summary-section">
+                        <div class="summary-section-header" onclick="toggleSummarySection('assetsBreakdown')">
+                            <span class="summary-toggle-icon" id="assetsBreakdownToggle">▼</span>
+                            <span>ASSETS</span>
+                            <span id="totalAssets" class="total-assets">$0.00</span>
+                        </div>
+                        <div class="summary-details" id="assetsBreakdown">
+                            <div class="summary-subsection">
+                                <div class="summary-subsection-title">Bank Accounts</div>
+                                <div id="summaryBankAccounts" class="summary-items"></div>
+                            </div>
+                            <div class="summary-subsection">
+                                <div class="summary-subsection-title">Merchant Accounts</div>
+                                <div id="summaryMerchantAccounts" class="summary-items"></div>
+                            </div>
+                            <div class="summary-subsection">
+                                <div class="summary-subsection-title">Inventory</div>
+                                <div id="summaryInventory" class="summary-items"></div>
+                            </div>
+                            <div class="summary-subsection">
+                                <div class="summary-subsection-title">Other Assets</div>
+                                <div id="summaryOtherAssets" class="summary-items"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div id="inventory"></div>
-                </div>
-
-                <div class="section">
-                    <div class="section-header">
-                        <h2 class="section-title">Other Assets</h2>
-                        <button class="add-account-btn" onclick="openAddAccountModal()">+ Add Asset</button>
+                    
+                    <!-- Liabilities Breakdown Section -->
+                    <div class="summary-section">
+                        <div class="summary-section-header" onclick="toggleSummarySection('liabilitiesBreakdown')">
+                            <span class="summary-toggle-icon" id="liabilitiesBreakdownToggle">▼</span>
+                            <span>LIABILITIES</span>
+                            <span id="totalLiabilities" class="total-liabilities">$0.00</span>
+                        </div>
+                        <div class="summary-details" id="liabilitiesBreakdown">
+                            <div id="summaryLiabilities" class="summary-items"></div>
+                        </div>
                     </div>
-                    <div id="receivables"></div>
-                </div>
-
-                <div class="section">
-                    <div class="section-header">
-                        <h2 class="section-title">Liabilities</h2>
-                        <button class="add-account-btn" onclick="openAddAccountModal()">+ Add Liability</button>
-                    </div>
-                    <div id="liabilities"></div>
                 </div>
             </div>
+        </div>
 
-            <div class="summary-panel">
-                <h3 class="summary-title">Summary</h3>
-                
-                <div id="draftInfoPanel" class="draft-info-panel" style="display: none;">
-                    <strong style="color: #856404;">Draft Status</strong>
-                    <div style="font-size: 12px; margin-top: 5px;">
-                        <div>Draft ID: <span id="currentDraftIdDisplay">-</span></div>
-                        <div>Last Saved: <span id="lastSavedTime">-</span></div>
-                        <div>Balances Saved: <span id="balanceCount">0</span></div>
+        <!-- Settings Tab -->
+        <div id="settingsTab" class="tab-content">
+            <div class="settings-grid">
+                <div class="settings-sidebar">
+                    <div class="settings-menu-item active" onclick="showSettingsSection('drafts')">
+                        📝 Pending Drafts
+                    </div>
+                    <div class="settings-menu-item" onclick="showSettingsSection('categories')">
+                        📚 All Categories
+                    </div>
+                    <div class="settings-menu-item" onclick="showSettingsSection('accounts')">
+                        💼 All Accounts
+                    </div>
+                    <div class="settings-menu-item" onclick="showSettingsSection('move')">
+                        🔄 Move Accounts
+                    </div>
+                    <div class="settings-menu-item" onclick="showSettingsSection('helpers')">
+                        🔧 Line Item Helpers
+                    </div>
+                    <div class="settings-menu-item" onclick="showSettingsSection('import')">
+                        📥 Bulk Import
                     </div>
                 </div>
-                
-                <div class="summary-section">
-                    <div class="summary-item total-assets">
-                        <span>Total Assets</span>
-                        <span id="totalAssets">$0.00</span>
-                    </div>
-                    <div class="summary-item total-liabilities">
-                        <span>Total Liabilities</span>
-                        <span id="totalLiabilities">$0.00</span>
-                    </div>
-                    <div class="summary-item net-position">
-                        <span>Net Position</span>
-                        <span id="netPosition">$0.00</span>
-                    </div>
-                </div>
-
-                <div class="summary-section">
-                    <h4 style="font-size: 14px; margin-bottom: 10px;">Asset Details</h4>
-                    <div id="assetDetails" style="font-size: 12px; color: #6c757d;"></div>
-                </div>
-
-                <div class="summary-section">
-                    <h4 style="font-size: 14px; margin-bottom: 10px;">Liability Details</h4>
-                    <div id="liabilityDetails" style="font-size: 12px; color: #6c757d;"></div>
+                <div class="settings-content" id="settingsContent">
+                    <!-- Content will be loaded dynamically -->
                 </div>
             </div>
         </div>
 
-        <div class="actions">
-            <div class="action-group">
-                <button class="btn btn-danger" onclick="deleteDraft()" id="deleteDraftBtn" style="display: none;">Delete Draft</button>
-            </div>
-            <div class="action-group">
-                <button class="btn btn-draft" onclick="saveDraft()">Save as Draft</button>
-                <button class="btn btn-publish" onclick="publishSnapshot()">Publish Final</button>
+        <!-- Reports Tab -->
+        <div id="reportsTab" class="tab-content">
+            <div style="padding: 40px; text-align: center;">
+                <h2>📊 Reports Section</h2>
+                <p>Detailed reports and analytics will be displayed here</p>
+                <button class="btn btn-primary" onclick="generateMonthlyReport()">Generate Monthly Report</button>
+                <button class="btn btn-primary" onclick="generateYearlyReport()">Generate Yearly Report</button>
             </div>
         </div>
     </div>
 
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
-    </div>
-
-    <!-- Add Account Modal -->
-    <div id="addAccountModal" class="modal-overlay" style="display: none;">
+    <!-- Move Account Modal -->
+    <div id="moveAccountModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Add New Account</h3>
-                <button class="modal-close" onclick="closeAddAccountModal()">×</button>
+                <h3>Move Account</h3>
+                <button onclick="closeMoveModal()" class="modal-close">×</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>Account Name *</label>
-                    <input type="text" id="newAccountName" class="form-input" placeholder="e.g., Wells Fargo Checking">
+                    <label>Account:</label>
+                    <input type="text" id="moveAccountName" class="form-input" readonly>
                 </div>
-                
                 <div class="form-group">
-                    <label>Account Type *</label>
+                    <label>Move to Category:</label>
+                    <select id="moveCategorySelect" class="form-input">
+                        <option value="">Select Category...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Move to Subcategory:</label>
+                    <select id="moveSubcategorySelect" class="form-input">
+                        <option value="">Select Subcategory...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeMoveModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmMove()">Move Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Account Modal -->
+    <div id="addAccountModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Account</h3>
+                <button onclick="closeAddAccountModal()" class="modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Account Name:</label>
+                    <input type="text" id="newAccountName" class="form-input" placeholder="Enter account name">
+                </div>
+                <div class="form-group">
+                    <label>Account Type:</label>
                     <select id="newAccountType" class="form-input">
-                        <option value="">Select type...</option>
+                        <option value="">Select Type...</option>
                     </select>
                 </div>
-                
                 <div class="form-group">
-                    <label>Bank (optional)</label>
+                    <label>Bank (optional):</label>
                     <select id="newAccountBank" class="form-input">
-                        <option value="">Select bank...</option>
+                        <option value="">Select Bank...</option>
                     </select>
                 </div>
-                
                 <div class="form-group">
-                    <label>Account Number (optional)</label>
+                    <label>Account Number (optional):</label>
                     <input type="text" id="newAccountNumber" class="form-input" placeholder="Last 4 digits">
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeAddAccountModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveNewAccount()">Add Account</button>
+                <button class="btn btn-primary" onclick="confirmAddAccount()">Add Account</button>
             </div>
         </div>
     </div>
 
-    <!-- Intercompany Modal -->
-    <div id="intercompanyModal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Create Intercompany Accounts</h3>
-                <button class="modal-close" onclick="closeIntercompanyModal()">×</button>
-            </div>
-            <div class="modal-body">
-                <p style="color: #666; margin-bottom: 20px;">
-                    This will create paired accounts: an asset (receivable) for the creditor store
-                    and a liability (payable) for the debtor store.
-                </p>
-                
-                <div class="form-group">
-                    <label>Creditor Store (Who is owed money?) *</label>
-                    <select id="creditorStore" class="form-input">
-                        <option value="">Select store...</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Debtor Store (Who owes money?) *</label>
-                    <select id="debtorStore" class="form-input">
-                        <option value="">Select store...</option>
-                    </select>
-                </div>
-                
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 20px;">
-                    <strong>This will create:</strong>
-                    <div id="accountPreview" style="margin-top: 10px; font-size: 0.9rem; color: #555;">
-                        Select both stores to see preview...
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeIntercompanyModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="createIntercompanyAccounts()">Create Accounts</button>
-            </div>
-        </div>
+    <!-- Loading Overlay -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
     </div>
 
-    <!-- Bulk Import Modal -->
-    <div id="bulkImportModal">
-        <div class="bulk-modal-content">
-            <div class="bulk-modal-header">
-                <h2>Bulk Import Accounts</h2>
-                <button class="modal-close" onclick="closeBulkImport()">×</button>
-            </div>
-            <div class="bulk-modal-body">
-                <div class="format-help">
-                    <strong>Format Instructions:</strong><br>
-                    Paste your accounts data in this format (tab or space separated):<br>
-                    <code>Category  StoreName  Bank/Type  AccountName</code><br>
-                    Example: <code>Asset  Seal Skin  Chase  PLAT BUS CHECKING (...0172)</code><br><br>
-                    Categories: Asset or Liability<br>
-                    The system will auto-detect account types and parse account numbers from (...XXXX) format
-                </div>
-
-                <div>
-                    <label><strong>Paste Your Account Data:</strong></label>
-                    <textarea id="bulkImportData" class="import-textarea" placeholder="Paste your account data here..."></textarea>
-                </div>
-
-                <button class="btn btn-primary" onclick="parseImportData()" style="margin-top: 10px;">Parse & Preview</button>
-
-                <div id="importPreview" style="display: none;">
-                    <h3 style="margin-top: 20px;">Import Preview</h3>
-                    <div id="importStats" class="import-stats"></div>
-                    <div id="previewTableContainer"></div>
-                </div>
-            </div>
-            <div class="bulk-modal-footer">
-                <div id="importStatus"></div>
-                <div>
-                    <button class="btn btn-secondary" onclick="closeBulkImport()">Cancel</button>
-                    <button class="btn btn-primary" id="confirmImportBtn" onclick="confirmBulkImport()" style="display: none;">Import Accounts</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Global state
-        let sessionId = null;
-        let currentStoreId = null;
-        let storeAccounts = {};
-        let currentDraftId = null;
-        let accountTypes = [];
-        let banks = [];
-        let parsedAccounts = [];
-        let allStores = [];
-        let currentDraftBalances = {}; // Store draft balances globally
-
-        // Initialize on load
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeWizard();
-            loadAccountMetadata();
-            document.getElementById('storeSelect').addEventListener('change', onStoreChange);
-            document.getElementById('creditorStore').addEventListener('change', updateAccountPreview);
-            document.getElementById('debtorStore').addEventListener('change', updateAccountPreview);
-            
-            // Set today's date
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('snapshotDate').value = today;
-        });
-
-        // Initialize wizard
-        async function initializeWizard() {
-            showLoading(true);
-            try {
-                const response = await fetch('/api/wizard/initialize', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'}
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    sessionId = data.session_id;
-                    allStores = data.stores;
-                    populateStores(data.stores);
-                } else {
-                    showMessage('Failed to initialize: ' + data.error, 'error');
-                }
-            } catch (error) {
-                showMessage('Network error: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Populate store dropdown
-        function populateStores(stores) {
-            const select = document.getElementById('storeSelect');
-            select.innerHTML = '<option value="">Select Store...</option>';
-            
-            stores.forEach(store => {
-                const option = document.createElement('option');
-                option.value = store.id;
-                option.textContent = `${store.name} (${store.code})`;
-                select.appendChild(option);
-            });
-        }
-
-        // Handle store selection - FIXED to maintain draft values
-        async function onStoreChange() {
-            const storeId = document.getElementById('storeSelect').value;
-            if (!storeId) {
-                clearAccountSections();
-                return;
-            }
-            
-            currentStoreId = storeId;
-            showLoading(true);
-            
-            try {
-                const response = await fetch(`/api/wizard/accounts/${storeId}`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    storeAccounts = data.accounts;
-                    renderAccounts();
-                    
-                    // Restore draft values if they exist
-                    if (currentDraftId && currentDraftBalances) {
-                        restoreDraftValues();
-                    }
-                } else {
-                    showMessage('Failed to load accounts: ' + data.error, 'error');
-                }
-            } catch (error) {
-                showMessage('Network error: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Restore draft values after changing stores
-        function restoreDraftValues() {
-            if (!currentDraftBalances || Object.keys(currentDraftBalances).length === 0) {
-                console.log('No draft balances to restore');
-                return;
-            }
-            
-            let restoredCount = 0;
-            for (const [accountId, value] of Object.entries(currentDraftBalances)) {
-                const input = document.querySelector(`input[data-account-id="${accountId}"]`);
-                if (input) {
-                    input.value = Math.abs(value);
-                    input.classList.add('has-value');
-                    restoredCount++;
-                    console.log(`Restored value ${value} for account ${accountId}`);
-                }
-            }
-            
-            if (restoredCount > 0) {
-                updateSummary();
-                console.log(`Restored ${restoredCount} draft values`);
-            }
-        }
-
-        // Render account inputs
-        function renderAccounts() {
-            renderAccountSection('bankAccounts', storeAccounts.bank_accounts, 'Banks');
-            renderAccountSection('merchantAccounts', storeAccounts.merchant_accounts, 'Merchant Accounts');
-            renderAccountSection('inventory', storeAccounts.inventory, 'Inventory');
-            renderAccountSection('receivables', storeAccounts.receivables, 'Receivables');
-            renderAccountSection('liabilities', storeAccounts.liabilities, 'Payables');
-            
-            // Add input listeners
-            document.querySelectorAll('.account-input').forEach(input => {
-                input.addEventListener('input', function() {
-                    updateSummary();
-                    if (this.value && parseFloat(this.value) !== 0) {
-                        this.classList.add('has-value');
-                    } else {
-                        this.classList.remove('has-value');
-                    }
-                });
-            });
-        }
-
-        // Render a section of accounts
-        function renderAccountSection(containerId, accounts, title) {
-            const container = document.getElementById(containerId);
-            if (!accounts || accounts.length === 0) {
-                container.innerHTML = '<p style="color: #999; font-size: 14px;">No accounts available</p>';
-                return;
-            }
-            
-            const grouped = {};
-            accounts.forEach(account => {
-                const key = account.bank || account.type;
-                if (!grouped[key]) grouped[key] = [];
-                grouped[key].push(account);
-            });
-            
-            let html = '';
-            for (const [group, items] of Object.entries(grouped)) {
-                html += `<div class="account-group">`;
-                html += `<div class="account-group-title">${group}</div>`;
-                
-                items.forEach(account => {
-                    html += `
-                        <div class="account-row">
-                            <label class="account-label">${account.name}</label>
-                            <input type="number" 
-                                   class="account-input" 
-                                   data-account-id="${account.id}"
-                                   data-category="${account.category}"
-                                   placeholder="0.00" 
-                                   step="0.01">
-                            <button class="delete-account-btn" 
-                                    onclick="deleteAccount(${account.id}, '${account.name.replace(/'/g, "\\'")}', '${containerId}')" 
-                                    title="Delete this account">
-                                🗑️
-                            </button>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-            }
-            
-            container.innerHTML = html;
-        }
-
-        // Delete account function
-        async function deleteAccount(accountId, accountName, sectionId) {
-            if (!confirm(`Are you sure you want to delete "${accountName}"?\n\nThis will permanently remove this account and cannot be undone.`)) {
-                return;
-            }
-            
-            showLoading(true);
-            try {
-                const response = await fetch(`/api/wizard/delete-account/${accountId}`, {
-                    method: 'DELETE'
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage(`Account "${accountName}" deleted successfully`, 'success');
-                    await onStoreChange();
-                } else {
-                    showMessage(`Failed to delete account: ${data.error}`, 'error');
-                }
-            } catch (error) {
-                showMessage('Network error: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Clear account sections
-        function clearAccountSections() {
-            ['bankAccounts', 'merchantAccounts', 'inventory', 'receivables', 'liabilities'].forEach(id => {
-                document.getElementById(id).innerHTML = '';
-            });
-        }
-
-        // Update summary
-        function updateSummary() {
-            let totalAssets = 0;
-            let totalLiabilities = 0;
-            const assetDetails = [];
-            const liabilityDetails = [];
-            
-            document.querySelectorAll('.account-input').forEach(input => {
-                const value = parseFloat(input.value) || 0;
-                if (value === 0) return;
-                
-                const category = input.dataset.category;
-                const label = input.parentElement.querySelector('.account-label').textContent;
-                
-                if (category === 'Asset') {
-                    totalAssets += Math.abs(value);
-                    assetDetails.push({label, value: Math.abs(value)});
-                } else if (category === 'Liability') {
-                    totalLiabilities += Math.abs(value);
-                    liabilityDetails.push({label, value: Math.abs(value)});
-                }
-            });
-            
-            document.getElementById('totalAssets').textContent = formatCurrency(totalAssets);
-            document.getElementById('totalLiabilities').textContent = formatCurrency(totalLiabilities);
-            document.getElementById('netPosition').textContent = formatCurrency(totalAssets - totalLiabilities);
-            
-            const assetHtml = assetDetails.map(item =>
-                `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                    <span>${item.label}</span>
-                    <span>${formatCurrency(item.value)}</span>
-                </div>`
-            ).join('');
-            document.getElementById('assetDetails').innerHTML = assetHtml || 'No assets entered';
-            
-            const liabilityHtml = liabilityDetails.map(item =>
-                `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                    <span>${item.label}</span>
-                    <span>${formatCurrency(item.value)}</span>
-                </div>`
-            ).join('');
-            document.getElementById('liabilityDetails').innerHTML = liabilityHtml || 'No liabilities entered';
-        }
-
-        // Load previous snapshot
-        async function loadPreviousSnapshot() {
-            if (!currentStoreId) {
-                showMessage('Please select a store first', 'error');
-                return;
-            }
-            
-            showLoading(true);
-            try {
-                const response = await fetch(`/api/wizard/latest-snapshot/${currentStoreId}`);
-                const data = await response.json();
-                
-                if (data.success && data.has_previous) {
-                    for (const [accountId, balance] of Object.entries(data.balances)) {
-                        const input = document.querySelector(`input[data-account-id="${accountId}"]`);
-                        if (input) {
-                            input.value = Math.abs(balance);
-                            input.classList.add('has-value');
-                        }
-                    }
-                    updateSummary();
-                    showMessage(`Loaded snapshot from ${data.snapshot_date}`, 'success');
-                } else {
-                    showMessage('No previous snapshot found', 'error');
-                }
-            } catch (error) {
-                showMessage('Failed to load previous snapshot', 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Clear all inputs
-        function clearAll() {
-            if (confirm('Clear all entered values? This will NOT delete the saved draft.')) {
-                document.querySelectorAll('.account-input').forEach(input => {
-                    input.value = '';
-                    input.classList.remove('has-value');
-                });
-                updateSummary();
-                // Don't reset draft ID or balances - they stay in database
-            }
-        }
-
-        // FIXED Save as draft function
-        async function saveDraft() {
-            if (!currentStoreId) {
-                showMessage('Please select a store', 'error');
-                return;
-            }
-            
-            const snapshotDate = document.getElementById('snapshotDate').value;
-            if (!snapshotDate) {
-                showMessage('Please select a date', 'error');
-                return;
-            }
-            
-            const balances = collectBalances();
-            
-            // Don't save if no balances
-            if (!balances || balances.length === 0) {
-                showMessage('No balances to save. Please enter at least one value.', 'error');
-                return;
-            }
-            
-            console.log('Saving draft with balances:', balances);
-            console.log('Current draft ID:', currentDraftId);
-            
-            showLoading(true);
-            try {
-                const response = await fetch('/api/wizard/save-draft', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        store_id: parseInt(currentStoreId),
-                        snapshot_date: snapshotDate,
-                        balances: balances,
-                        draft_id: currentDraftId
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    currentDraftId = data.draft_id;
-                    
-                    // Store draft balances globally
-                    currentDraftBalances = {};
-                    balances.forEach(b => {
-                        currentDraftBalances[b.account_id] = b.amount;
-                    });
-                    
-                    document.getElementById('draftIndicator').classList.add('active');
-                    document.getElementById('deleteDraftBtn').style.display = 'inline-block';
-                    document.getElementById('draftInfoPanel').style.display = 'block';
-                    document.getElementById('currentDraftIdDisplay').textContent = '#' + data.draft_id;
-                    document.getElementById('lastSavedTime').textContent = new Date().toLocaleTimeString();
-                    document.getElementById('balanceCount').textContent = balances.length;
-                    showMessage(`Draft saved successfully! (${balances.length} balances)`, 'success');
-                } else {
-                    showMessage('Failed to save draft: ' + data.error, 'error');
-                }
-            } catch (error) {
-                showMessage('Network error: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Publish final snapshot
-        async function publishSnapshot() {
-            if (!currentStoreId) {
-                showMessage('Please select a store', 'error');
-                return;
-            }
-            
-            const snapshotDate = document.getElementById('snapshotDate').value;
-            if (!snapshotDate) {
-                showMessage('Please select a date', 'error');
-                return;
-            }
-            
-            const balances = collectBalances();
-            if (balances.length === 0) {
-                showMessage('Please enter at least one balance', 'error');
-                return;
-            }
-            
-            if (!confirm('Publish this as final? This will create a permanent snapshot.')) {
-                return;
-            }
-            
-            showLoading(true);
-            try {
-                const response = await fetch('/api/wizard/save-snapshot', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        store_id: parseInt(currentStoreId),
-                        snapshot_date: snapshotDate,
-                        balances: balances,
-                        status: 'completed',
-                        draft_id: currentDraftId
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('Snapshot published successfully!', 'success');
-                    clearAll();
-                    currentDraftId = null;
-                    currentDraftBalances = {};
-                    document.getElementById('draftIndicator').classList.remove('active');
-                    document.getElementById('draftInfoPanel').style.display = 'none';
-                } else {
-                    showMessage('Failed to publish: ' + data.error, 'error');
-                }
-            } catch (error) {
-                showMessage('Network error: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Load drafts list
-        async function loadDrafts() {
-            showLoading(true);
-            try {
-                const response = await fetch('/api/wizard/drafts');
-                const data = await response.json();
-                
-                if (data.success && data.drafts.length > 0) {
-                    displayDrafts(data.drafts);
-                } else {
-                    showMessage('No drafts found', 'info');
-                }
-            } catch (error) {
-                showMessage('Failed to load drafts', 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Display drafts with balance count
-        function displayDrafts(drafts) {
-            const draftList = document.getElementById('draftList');
-            let html = '<h4>Your Drafts:</h4>';
-            
-            drafts.forEach(draft => {
-                html += `
-                    <div class="draft-item">
-                        <span>${draft.store_name} - ${draft.snapshot_date} 
-                        <span class="draft-status-badge">${draft.balance_count} balances</span>
-                        </span>
-                        <button class="btn btn-secondary" onclick="loadSpecificDraft(${draft.id})">Load</button>
-                    </div>
-                `;
-            });
-            
-            draftList.innerHTML = html;
-            draftList.classList.add('active');
-            
-            setTimeout(() => {
-                draftList.classList.remove('active');
-            }, 10000);
-        }
-
-        // Load specific draft - FIXED to properly restore values
-        async function loadSpecificDraft(draftId) {
-            showLoading(true);
-            try {
-                const response = await fetch(`/api/wizard/draft/${draftId}`);
-                const data = await response.json();
-                
-                console.log('Loading draft data:', data);
-                
-                if (data.success) {
-                    // Store draft ID first
-                    currentDraftId = draftId;
-                    
-                    // Set store and date
-                    document.getElementById('storeSelect').value = data.draft.store_id;
-                    document.getElementById('snapshotDate').value = data.draft.snapshot_date;
-                    
-                    // Store balances globally BEFORE loading accounts
-                    currentDraftBalances = {};
-                    if (data.draft.balances && data.draft.balances.length > 0) {
-                        data.draft.balances.forEach(balance => {
-                            currentDraftBalances[balance.account_id] = balance.amount;
-                        });
-                    }
-                    
-                    // Load the store's accounts
-                    await onStoreChange();
-                    
-                    // Force restore values after a brief delay to ensure DOM is ready
-                    setTimeout(() => {
-                        for (const [accountId, value] of Object.entries(currentDraftBalances)) {
-                            const input = document.querySelector(`input[data-account-id="${accountId}"]`);
-                            if (input) {
-                                input.value = Math.abs(value);
-                                input.classList.add('has-value');
-                                console.log(`Restored value ${value} for account ${accountId}`);
-                            } else {
-                                console.log(`Could not find input for account ${accountId}`);
-                            }
-                        }
-                        updateSummary();
-                    }, 100);
-                    
-                    // Update UI elements
-                    document.getElementById('draftIndicator').classList.add('active');
-                    document.getElementById('deleteDraftBtn').style.display = 'inline-block';
-                    document.getElementById('draftList').classList.remove('active');
-                    document.getElementById('draftInfoPanel').style.display = 'block';
-                    document.getElementById('currentDraftIdDisplay').textContent = '#' + draftId;
-                    document.getElementById('lastSavedTime').textContent = new Date(data.draft.updated_at || data.draft.created_at).toLocaleTimeString();
-                    document.getElementById('balanceCount').textContent = data.draft.balance_count || data.draft.balances.length || 0;
-                    
-                    showMessage(`Loaded draft #${draftId} with ${data.draft.balance_count || data.draft.balances.length} balances`, 'success');
-                }
-            } catch (error) {
-                console.error('Failed to load draft:', error);
-                showMessage('Failed to load draft: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Delete draft
-        async function deleteDraft() {
-            if (!currentDraftId) return;
-            
-            if (!confirm('Delete this draft? This will remove all saved balances.')) return;
-            
-            showLoading(true);
-            try {
-                const response = await fetch(`/api/wizard/draft/${currentDraftId}`, {
-                    method: 'DELETE'
-                });
-                
-                if (response.ok) {
-                    currentDraftId = null;
-                    currentDraftBalances = {};
-                    document.getElementById('draftIndicator').classList.remove('active');
-                    document.getElementById('deleteDraftBtn').style.display = 'none';
-                    document.getElementById('draftInfoPanel').style.display = 'none';
-                    showMessage('Draft deleted', 'info');
-                    clearAll();
-                }
-            } catch (error) {
-                showMessage('Failed to delete draft', 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Account Management Functions
-        async function loadAccountMetadata() {
-            try {
-                const typesResponse = await fetch('/api/wizard/account-types');
-                const typesData = await typesResponse.json();
-                if (typesData.success) {
-                    accountTypes = typesData.account_types;
-                    populateAccountTypes();
-                }
-                
-                const banksResponse = await fetch('/api/wizard/banks');
-                const banksData = await banksResponse.json();
-                if (banksData.success) {
-                    banks = banksData.banks;
-                    populateBanks();
-                }
-            } catch (error) {
-                console.error('Failed to load metadata:', error);
-            }
-        }
-
-        function populateAccountTypes() {
-            const select = document.getElementById('newAccountType');
-            select.innerHTML = '<option value="">Select type...</option>';
-            
-            const assetTypes = accountTypes.filter(t => t.category === 'Asset');
-            const liabilityTypes = accountTypes.filter(t => t.category === 'Liability');
-            
-            if (assetTypes.length > 0) {
-                const assetGroup = document.createElement('optgroup');
-                assetGroup.label = 'Assets';
-                assetTypes.forEach(type => {
-                    const option = document.createElement('option');
-                    option.value = type.id;
-                    option.textContent = type.name;
-                    option.dataset.category = type.category;
-                    assetGroup.appendChild(option);
-                });
-                select.appendChild(assetGroup);
-            }
-            
-            if (liabilityTypes.length > 0) {
-                const liabilityGroup = document.createElement('optgroup');
-                liabilityGroup.label = 'Liabilities';
-                liabilityTypes.forEach(type => {
-                    const option = document.createElement('option');
-                    option.value = type.id;
-                    option.textContent = type.name;
-                    option.dataset.category = type.category;
-                    liabilityGroup.appendChild(option);
-                });
-                select.appendChild(liabilityGroup);
-            }
-        }
-
-        function populateBanks() {
-            const select = document.getElementById('newAccountBank');
-            select.innerHTML = '<option value="">Select bank (optional)...</option>';
-            
-            banks.forEach(bank => {
-                const option = document.createElement('option');
-                option.value = bank.id;
-                option.textContent = bank.name;
-                select.appendChild(option);
-            });
-        }
-
-        function openAddAccountModal() {
-            if (!currentStoreId) {
-                showMessage('Please select a store first', 'error');
-                return;
-            }
-            document.getElementById('addAccountModal').style.display = 'flex';
-        }
-
-        function closeAddAccountModal() {
-            document.getElementById('addAccountModal').style.display = 'none';
-            document.getElementById('newAccountName').value = '';
-            document.getElementById('newAccountType').value = '';
-            document.getElementById('newAccountBank').value = '';
-            document.getElementById('newAccountNumber').value = '';
-        }
-
-        async function saveNewAccount() {
-            const accountName = document.getElementById('newAccountName').value.trim();
-            const accountTypeId = document.getElementById('newAccountType').value;
-            const bankId = document.getElementById('newAccountBank').value;
-            const accountNumber = document.getElementById('newAccountNumber').value.trim();
-            
-            if (!accountName) {
-                showMessage('Please enter an account name', 'error');
-                return;
-            }
-            
-            if (!accountTypeId) {
-                showMessage('Please select an account type', 'error');
-                return;
-            }
-            
-            showLoading(true);
-            try {
-                const response = await fetch('/api/wizard/add-account', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        store_id: parseInt(currentStoreId),
-                        account_name: accountName,
-                        account_type_id: parseInt(accountTypeId),
-                        bank_id: bankId ? parseInt(bankId) : null,
-                        account_number: accountNumber || null
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('Account added successfully!', 'success');
-                    closeAddAccountModal();
-                    await onStoreChange();
-                } else {
-                    showMessage('Failed to add account: ' + data.error, 'error');
-                }
-            } catch (error) {
-                showMessage('Network error: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Intercompany Functions
-        function openIntercompanyModal() {
-            document.getElementById('intercompanyModal').style.display = 'flex';
-            populateIntercompanyStores();
-        }
-
-        function closeIntercompanyModal() {
-            document.getElementById('intercompanyModal').style.display = 'none';
-            document.getElementById('creditorStore').value = '';
-            document.getElementById('debtorStore').value = '';
-            document.getElementById('accountPreview').innerHTML = 'Select both stores to see preview...';
-        }
-
-        function populateIntercompanyStores() {
-            const creditorSelect = document.getElementById('creditorStore');
-            const debtorSelect = document.getElementById('debtorStore');
-            
-            creditorSelect.innerHTML = '<option value="">Select store...</option>';
-            debtorSelect.innerHTML = '<option value="">Select store...</option>';
-            
-            allStores.forEach(store => {
-                creditorSelect.innerHTML += `<option value="${store.id}">${store.name} (${store.code})</option>`;
-                debtorSelect.innerHTML += `<option value="${store.id}">${store.name} (${store.code})</option>`;
-            });
-        }
-
-        function updateAccountPreview() {
-            const creditorSelect = document.getElementById('creditorStore');
-            const debtorSelect = document.getElementById('debtorStore');
-            const preview = document.getElementById('accountPreview');
-            
-            if (creditorSelect.value && debtorSelect.value) {
-                const creditorName = creditorSelect.options[creditorSelect.selectedIndex].text.split(' (')[0];
-                const debtorName = debtorSelect.options[debtorSelect.selectedIndex].text.split(' (')[0];
-                
-                if (creditorSelect.value === debtorSelect.value) {
-                    preview.innerHTML = '<span style="color: #e74c3c;">Cannot create intercompany account with the same store!</span>';
-                } else {
-                    preview.innerHTML = `
-                        <div style="margin-bottom: 10px;">
-                            <strong style="color: #27ae60;">Asset for ${creditorName}:</strong><br>
-                            "${debtorName} owes ${creditorName}"
-                        </div>
-                        <div>
-                            <strong style="color: #e74c3c;">Liability for ${debtorName}:</strong><br>
-                            "Owed to ${creditorName}"
-                        </div>
-                    `;
-                }
-            }
-        }
-
-        async function createIntercompanyAccounts() {
-            const creditorStoreId = document.getElementById('creditorStore').value;
-            const debtorStoreId = document.getElementById('debtorStore').value;
-            
-            if (!creditorStoreId || !debtorStoreId) {
-                showMessage('Please select both stores', 'error');
-                return;
-            }
-            
-            if (creditorStoreId === debtorStoreId) {
-                showMessage('Cannot create intercompany account with the same store', 'error');
-                return;
-            }
-            
-            showLoading(true);
-            try {
-                const response = await fetch('/api/wizard/add-intercompany-accounts', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        creditor_store_id: parseInt(creditorStoreId),
-                        debtor_store_id: parseInt(debtorStoreId)
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage(data.message, 'success');
-                    closeIntercompanyModal();
-                    if (currentStoreId == creditorStoreId || currentStoreId == debtorStoreId) {
-                        await onStoreChange();
-                    }
-                } else {
-                    showMessage('Failed to create accounts: ' + data.error, 'error');
-                }
-            } catch (error) {
-                showMessage('Network error: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Bulk Import Functions (unchanged)
-        function openBulkImport() {
-            document.getElementById('bulkImportModal').classList.add('active');
-            document.getElementById('bulkImportData').value = '';
-            document.getElementById('importPreview').style.display = 'none';
-            document.getElementById('confirmImportBtn').style.display = 'none';
-            parsedAccounts = [];
-        }
-
-        function closeBulkImport() {
-            document.getElementById('bulkImportModal').classList.remove('active');
-        }
-
-        function parseImportData() {
-            const rawData = document.getElementById('bulkImportData').value.trim();
-            if (!rawData) {
-                alert('Please paste your account data first');
-                return;
-            }
-
-            parsedAccounts = [];
-            const lines = rawData.split('\n');
-            const errors = [];
-
-            const bankMapping = {
-                'Chase': 'Chase',
-                'Capital One': 'Capital One',
-                'CapitalOne': 'Capital One',
-                'Amazon': 'Amazon',
-                'Shopify': 'Shopify',
-                'Paypal': 'PayPal',
-                'PayPal': 'PayPal',
-                'Chase Points': 'Points System',
-                'ChasePoints': 'Points System',
-                'Points': 'Points System'
-            };
-
-            const accountTypePatterns = {
-                'PLAT BUS CHECKING': 'Bank Checking',
-                'BUS COMPLETE CHK': 'Bank Checking',
-                'BUS SELECT HY SAV': 'Bank Savings',
-                'Business Basic Checking': 'Bank Checking',
-                'Business Premier Check': 'Bank Checking',
-                'Business Advantage Sav': 'Bank Savings',
-                'AmazonSellerCentral': 'Merchant Account',
-                'Amazon': 'Merchant Account',
-                'Points': 'Points',
-                'Merchant': 'Merchant Account',
-                'Shopify': 'Merchant Account',
-                'Paypal': 'Merchant Account',
-                'PayPal': 'Merchant Account',
-                'LIVE INVENTORY': 'Inventory',
-                'Order Q': 'Order Receivable',
-                'owes': 'Intercompany Receivable',
-                'CarLoans': 'Loan Receivable',
-                'IRS REFUND': 'Tax Refund',
-                'Balkans.io': 'Order Receivable',
-                'Chase CC': 'Credit Card',
-                'CC': 'Credit Card',
-                'Ink Preferred': 'Credit Card',
-                'Ink Business': 'Credit Card',
-                'Ink Unlimited': 'Credit Card',
-                'BUSINESS CARD': 'Credit Card',
-                'Pending Shipments': 'Pending Shipments',
-                'Pending Refunds': 'Pending Refunds',
-                'UPS/': 'Shipping Payable',
-                'Management Fee': 'Management Fee',
-                'Ads': 'Advertising Payable',
-                'Container Duties': 'Container Duties',
-                'Rent': 'Rent Payable',
-                'Sales Tax': 'Sales Tax Payable',
-                'WorldWeav': 'Vendor Payable'
-            };
-
-            lines.forEach((line, index) => {
-                if (!line.trim()) return;
-
-                const parts = line.split('\t').filter(p => p.trim());
-                if (parts.length < 3) {
-                    const spaceParts = line.split(/\s{2,}/).filter(p => p.trim());
-                    if (spaceParts.length >= 3) {
-                        parts.push(...spaceParts);
-                    } else {
-                        const words = line.split(/\s+/).filter(p => p.trim());
-                        if (words.length >= 4) {
-                            parts[0] = words[0];
-                            parts[1] = words[1] === 'Seal' && words[2] === 'Skin' ? 'Seal Skin' :
-                                      words[1] === 'Slice' ? `${words[1]} ${words[2]}` : words[1];
-                            const startIdx = parts[1].includes('Slice') || parts[1].includes('Seal') ? 3 : 2;
-                            parts[2] = words[startIdx];
-                            parts[3] = words.slice(startIdx + 1).join(' ');
-                        }
-                    }
-                }
-
-                if (parts.length < 4) {
-                    errors.push(`Line ${index + 1}: Invalid format`);
-                    return;
-                }
-
-                const category = parts[0];
-                const storeName = parts[1];
-                const bankOrType = parts[2];
-                const accountName = parts.slice(3).join(' ');
-
-                const accountNumberMatch = accountName.match(/\(\.\.\.(\w+)\)/);
-                const accountNumber = accountNumberMatch ? accountNumberMatch[1] : null;
-
-                let accountType = null;
-                for (const [pattern, type] of Object.entries(accountTypePatterns)) {
-                    if (accountName.includes(pattern) || bankOrType.includes(pattern)) {
-                        accountType = type;
-                        break;
-                    }
-                }
-
-                if (!accountType) {
-                    if (category === 'Asset') {
-                        accountType = bankOrType.includes('Chase') || bankOrType.includes('Capital') ?
-                                    'Bank Checking' : 'Merchant Account';
-                    } else {
-                        accountType = 'Vendor Payable';
-                    }
-                }
-
-                const standardBank = bankMapping[bankOrType] || bankOrType;
-
-                parsedAccounts.push({
-                    category: category,
-                    storeName: storeName,
-                    bank: standardBank === accountName ? null : standardBank,
-                    accountName: accountName,
-                    accountNumber: accountNumber,
-                    accountType: accountType,
-                    status: 'new'
-                });
-            });
-
-            displayImportPreview();
-        }
-
-        function displayImportPreview() {
-            if (parsedAccounts.length === 0) {
-                alert('No valid accounts found to import');
-                return;
-            }
-
-            const stats = {
-                total: parsedAccounts.length,
-                assets: parsedAccounts.filter(a => a.category === 'Asset').length,
-                liabilities: parsedAccounts.filter(a => a.category === 'Liability').length
-            };
-
-            document.getElementById('importStats').innerHTML = `
-                <div class="stat-item">
-                    <span class="stat-number">${stats.total}</span>
-                    <span>Total Accounts</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number" style="color: #27ae60;">${stats.assets}</span>
-                    <span>Assets</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number" style="color: #e74c3c;">${stats.liabilities}</span>
-                    <span>Liabilities</span>
-                </div>
-            `;
-
-            let tableHtml = `
-                <table class="preview-table">
-                    <thead>
-                        <tr>
-                            <th>Store</th>
-                            <th>Category</th>
-                            <th>Account Type</th>
-                            <th>Bank</th>
-                            <th>Account Name</th>
-                            <th>Account #</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            parsedAccounts.forEach(account => {
-                tableHtml += `
-                    <tr>
-                        <td>${account.storeName}</td>
-                        <td><span style="color: ${account.category === 'Asset' ? '#27ae60' : '#e74c3c'}">${account.category}</span></td>
-                        <td>${account.accountType}</td>
-                        <td>${account.bank || '-'}</td>
-                        <td>${account.accountName}</td>
-                        <td>${account.accountNumber || '-'}</td>
-                        <td><span class="status-badge status-${account.status}">${account.status.toUpperCase()}</span></td>
-                    </tr>
-                `;
-            });
-
-            tableHtml += '</tbody></table>';
-            
-            document.getElementById('previewTableContainer').innerHTML = tableHtml;
-            document.getElementById('importPreview').style.display = 'block';
-            document.getElementById('confirmImportBtn').style.display = 'inline-block';
-        }
-
-        async function confirmBulkImport() {
-            if (parsedAccounts.length === 0) {
-                alert('No accounts to import');
-                return;
-            }
-
-            if (!confirm(`Import ${parsedAccounts.length} accounts? This cannot be undone.`)) {
-                return;
-            }
-
-            document.getElementById('importStatus').innerHTML = 'Importing accounts...';
-            const importBtn = document.getElementById('confirmImportBtn');
-            importBtn.disabled = true;
-
-            try {
-                const response = await fetch('/api/wizard/bulk-import', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({accounts: parsedAccounts})
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('importStatus').innerHTML =
-                        `<span style="color: green;">✓ Successfully imported ${data.created} accounts!</span>`;
-                    
-                    setTimeout(() => {
-                        closeBulkImport();
-                        if (window.currentStoreId) {
-                            window.onStoreChange();
-                        }
-                    }, 2000);
-                } else {
-                    document.getElementById('importStatus').innerHTML =
-                        `<span style="color: red;">Error: ${data.error}</span>`;
-                    importBtn.disabled = false;
-                }
-            } catch (error) {
-                document.getElementById('importStatus').innerHTML =
-                    `<span style="color: red;">Network error: ${error.message}</span>`;
-                importBtn.disabled = false;
-            }
-        }
-
-        // Collect balances from form
-        function collectBalances() {
-            const balances = [];
-            document.querySelectorAll('.account-input').forEach(input => {
-                const value = parseFloat(input.value) || 0;
-                if (value !== 0) {
-                    balances.push({
-                        account_id: parseInt(input.dataset.accountId),
-                        amount: input.dataset.category === 'Liability' ? -Math.abs(value) : Math.abs(value)
-                    });
-                }
-            });
-            console.log('Collected balances:', balances);
-            return balances;
-        }
-
-        // Utility functions
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: 2
-            }).format(amount);
-        }
-
-        function showLoading(show) {
-            document.getElementById('loading').classList.toggle('active', show);
-        }
-
-        function showMessage(text, type) {
-            const messageEl = document.getElementById('message');
-            messageEl.textContent = text;
-            messageEl.className = `message ${type} active`;
-            setTimeout(() => {
-                messageEl.classList.remove('active');
-            }, 5000);
-        }
-    </script>
+    <script src="wizard.js"></script>
+    <!-- Add Chart.js for the dashboard charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>

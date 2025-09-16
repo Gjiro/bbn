@@ -138,25 +138,39 @@ def dashboard_summary():
     try:
         store_id = request.args.get("store_id", type=int)
         snapshot_date = request.args.get("date", "latest")
+        include_drafts = request.args.get("include_drafts", "false").lower() == "true"
         
         # Get latest snapshot for each store or specific store
         if store_id:
-            latest_snapshot = Snapshot.query.filter_by(store_id=store_id).order_by(desc(Snapshot.snapshot_date)).first()
+            query = Snapshot.query.filter_by(store_id=store_id)
+            
+            # Filter by status unless explicitly including drafts
+            if not include_drafts:
+                query = query.filter_by(status='completed')
+            
+            latest_snapshot = query.order_by(desc(Snapshot.snapshot_date), desc(Snapshot.id)).first()
             snapshots = [latest_snapshot] if latest_snapshot else []
         else:
-            # Get latest snapshot for each store
-            subquery = db.session.query(
-                Snapshot.store_id,
-                func.max(Snapshot.snapshot_date).label("max_date")
-            ).group_by(Snapshot.store_id).subquery()
+            # Get all active stores
+            stores = Store.query.filter_by(is_active=True).all()
+            snapshots = []
             
-            snapshots = db.session.query(Snapshot).join(
-                subquery,
-                and_(
-                    Snapshot.store_id == subquery.c.store_id,
-                    Snapshot.snapshot_date == subquery.c.max_date
-                )
-            ).all()
+            for store in stores:
+                # Get the latest snapshot for this specific store
+                query = Snapshot.query.filter_by(store_id=store.id)
+                
+                # Filter by status
+                if not include_drafts:
+                    query = query.filter_by(status='completed')
+                
+                # Get the most recent one - order by date AND id to handle same-date entries
+                latest = query.order_by(
+                    desc(Snapshot.snapshot_date),
+                    desc(Snapshot.id)  # Use ID as tiebreaker for same dates
+                ).first()
+                
+                if latest:
+                    snapshots.append(latest)
         
         # Calculate consolidated metrics
         total_assets = sum(s.total_assets or 0 for s in snapshots)
@@ -172,13 +186,53 @@ def dashboard_summary():
                 "store_id": snapshot.store_id,
                 "store_name": snapshot.store.name,
                 "store_code": snapshot.store.code,
-                "snapshot_date": snapshot.snapshot_date.isoformat(),
+                "snapshot_date": snapshot.snapshot_date.isoformat() if snapshot.snapshot_date else None,
+                "snapshot_id": snapshot.id,  # Include ID for debugging
+                "status": snapshot.status,
                 "net_position": float(snapshot.net_position or 0),
                 "total_assets": float(snapshot.total_assets or 0),
                 "total_liabilities": float(snapshot.total_liabilities or 0),
                 "ytd_sales": float(snapshot.ytd_sales or 0),
-                "ytd_profit": float(snapshot.ytd_profit or 0)
+                "ytd_profit": float(snapshot.ytd_profit or 0),
+                "created_at": snapshot.created_at.isoformat() if snapshot.created_at else None,
+                "updated_at": snapshot.updated_at.isoformat() if snapshot.updated_at else None
             })
+        
+        # Sort store breakdown by store name for consistent display
+        store_breakdown.sort(key=lambda x: x["store_name"])
+        
+        # Find stores with only drafts (if not showing drafts)
+        stores_with_only_drafts = []
+        if not include_drafts:
+            all_stores = Store.query.filter_by(is_active=True).all()
+            for store in all_stores:
+                if not any(s.store_id == store.id for s in snapshots):
+                    # Check if this store has any drafts
+                    has_draft = Snapshot.query.filter_by(
+                        store_id=store.id,
+                        status='draft'
+                    ).first() is not None
+                    
+                    if has_draft:
+                        # Get the latest draft info
+                        latest_draft = Snapshot.query.filter_by(
+                            store_id=store.id,
+                            status='draft'
+                        ).order_by(
+                            desc(Snapshot.snapshot_date),
+                            desc(Snapshot.id)
+                        ).first()
+                        
+                        stores_with_only_drafts.append({
+                            "store_id": store.id,
+                            "store_name": store.name,
+                            "store_code": store.code,
+                            "draft_date": latest_draft.snapshot_date.isoformat() if latest_draft else None,
+                            "draft_count": Snapshot.query.filter_by(
+                                store_id=store.id,
+                                status='draft'
+                            ).count()
+                        })
         
         return jsonify({
             "success": True,
@@ -190,12 +244,16 @@ def dashboard_summary():
                 "ytd_profit": float(ytd_profit),
                 "profit_margin": float(ytd_profit / ytd_sales * 100) if ytd_sales > 0 else 0,
                 "store_count": len(snapshots),
-                "last_updated": max(s.created_at for s in snapshots).isoformat() if snapshots else None
+                "last_updated": max(s.created_at for s in snapshots).isoformat() if snapshots else None,
+                "showing_drafts": include_drafts
             },
-            "stores": store_breakdown
+            "stores": store_breakdown,
+            "stores_with_only_drafts": stores_with_only_drafts
         })
     except Exception as e:
         print(f"Error fetching dashboard summary: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
 @api_bp.route("/dashboard/timeline", methods=["GET"])

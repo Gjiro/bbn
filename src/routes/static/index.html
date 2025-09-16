@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Era Balance Sheet System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="neon-body">
+    <!-- Background Effects -->
+    <div class="neon-background">
+        <div class="neon-grid"></div>
+        <div class="neon-particles"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="neon-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <h1 class="neon-title neon-pulse-text">
+                    <i class="fas fa-chart-line"></i>
+                    ELITE ERA FINANCIAL TERMINAL
+                </h1>
+                <div class="subtitle neon-flicker-text">BALANCE SHEET MANAGEMENT SYSTEM</div>
+            </div>
+            <div class="header-controls">
+                <div class="date-selector neon-card">
+                    <label for="snapshotDate">SNAPSHOT DATE:</label>
+                    <select id="snapshotDate" class="neon-select">
+                        <option value="latest">LATEST AVAILABLE</option>
+                        <!-- Dynamic options will be populated by JavaScript -->
+                    </select>
+                </div>
+                <button class="neon-btn neon-btn-primary" id="newSnapshotBtn">
+                    <i class="fas fa-plus"></i>
+                    NEW SNAPSHOT
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard -->
+    <main class="dashboard-main">
+        <!-- KPI Overview -->
+        <section class="kpi-section">
+            <div class="kpi-grid">
+                <div class="kpi-card neon-card neon-fade-in">
+                    <div class="kpi-header">
+                        <h3>TOTAL NET POSITION</h3>
+                        <i class="fas fa-wallet neon-icon"></i>
+                    </div>
+                    <div class="kpi-value neon-glow-text" id="totalNetPosition">$0</div>
+                    <div class="kpi-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span id="netPositionChange">+0.0%</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card neon-card neon-fade-in" style="animation-delay: 0.1s">
+                    <div class="kpi-header">
+                        <h3>TOTAL ASSETS</h3>
+                        <i class="fas fa-coins neon-icon"></i>
+                    </div>
+                    <div class="kpi-value neon-glow-text" id="totalAssets">$0</div>
+                    <div class="kpi-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span id="assetsChange">+0.0%</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card neon-card neon-fade-in" style="animation-delay: 0.2s">
+                    <div class="kpi-header">
+                        <h3>TOTAL LIABILITIES</h3>
+                        <i class="fas fa-credit-card neon-icon"></i>
+                    </div>
+                    <div class="kpi-value neon-glow-text" id="totalLiabilities">$0</div>
+                    <div class="kpi-change negative">
+                        <i class="fas fa-arrow-down"></i>
+                        <span id="liabilitiesChange">-0.0%</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card neon-card neon-fade-in" style="animation-delay: 0.3s">
+                    <div class="kpi-header">
+                        <h3>YTD PROFIT</h3>
+                        <i class="fas fa-chart-line neon-icon"></i>
+                    </div>
+                    <div class="kpi-value neon-glow-text" id="ytdProfit">$0</div>
+                    <div class="kpi-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span id="profitChange">+0.0%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Store Breakdown -->
+        <section class="stores-section">
+            <div class="section-header">
+                <h2 class="neon-section-title">STORE BREAKDOWN</h2>
+                <div class="section-controls">
+                    <button class="neon-btn neon-btn-secondary" id="refreshDataBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        REFRESH
+                    </button>
+                </div>
+            </div>
+            
+            <div class="stores-grid" id="storesGrid">
+                <!-- Store cards will be populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Timeline Chart -->
+        <section class="chart-section">
+            <div class="neon-card chart-card">
+                <div class="card-header">
+                    <h3>FINANCIAL TIMELINE</h3>
+                    <div class="chart-controls">
+                        <select id="timelineRange" class="neon-select">
+                            <option value="30">30 DAYS</option>
+                            <option value="90">90 DAYS</option>
+                            <option value="365">1 YEAR</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Historical Snapshots Table -->
+        <section class="table-section">
+            <div class="neon-card table-card">
+                <div class="card-header">
+                    <h3>HISTORICAL SNAPSHOTS</h3>
+                    <div class="table-controls">
+                        <input type="text" id="searchSnapshots" class="neon-input" placeholder="Search snapshots...">
+                        <select id="storeFilter" class="neon-select">
+                            <option value="">ALL STORES</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="neon-table" id="snapshotsTable">
+                        <thead>
+                            <tr>
+                                <th>DATE</th>
+                                <th>STORE</th>
+                                <th>NET POSITION</th>
+                                <th>ASSETS</th>
+                                <th>LIABILITIES</th>
+                                <th>YTD SALES</th>
+                                <th>YTD PROFIT</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="snapshotsTableBody">
+                            <!-- Table rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Wizard Modal -->
+    <div id="wizardModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content neon-card">
+            <div class="modal-header">
+                <h2>NEW BALANCE SHEET WIZARD</h2>
+                <button class="modal-close" id="closeWizardBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="wizard-steps">
+                    <div class="step active" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-title">STORE SELECTION</div>
+                    </div>
+                    <div class="step" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-title">BANK BALANCES</div>
+                    </div>
+                    <div class="step" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-title">INVENTORY & ASSETS</div>
+                    </div>
+                    <div class="step" data-step="4">
+                        <div class="step-number">4</div>
+                        <div class="step-title">LIABILITIES</div>
+                    </div>
+                    <div class="step" data-step="5">
+                        <div class="step-number">5</div>
+                        <div class="step-title">REVIEW & SAVE</div>
+                    </div>
+                </div>
+                
+                <div class="wizard-content" id="wizardContent">
+                    <!-- Step 1: Store Selection -->
+                    <div class="wizard-step active" id="step1">
+                        <h3>SELECT STORE</h3>
+                        <div class="store-selection">
+                            <select id="wizardStore" class="neon-select">
+                                <option value="">Choose a store...</option>
+                            </select>
+                        </div>
+                        <div class="date-selection">
+                            <label for="wizardDate">SNAPSHOT DATE:</label>
+                            <input type="date" id="wizardDate" class="neon-input" value="">
+                        </div>
+                    </div>
+
+                    <!-- Additional wizard steps will be dynamically added here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="neon-btn neon-btn-secondary" id="prevBtn" disabled>
+                    <i class="fas fa-arrow-left"></i>
+                    PREVIOUS
+                </button>
+                <button class="neon-btn neon-btn-primary" id="nextBtn">
+                    NEXT
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="neon-spinner"></div>
+            <div class="loading-text neon-pulse-text">PROCESSING DATA...</div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="dashboard.js"></script>
+    <!-- Removed duplicate initialization - dashboard.js handles it -->
+</body>
+</html>

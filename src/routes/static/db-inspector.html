@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balance Sheet DB Inspector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', Monaco, monospace;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #00d4ff;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: transparent;
+            border: 2px solid #00d4ff;
+            color: #00d4ff;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: rgba(0, 212, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .section {
+            background: rgba(26, 26, 46, 0.8);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        h2 {
+            color: #00ff41;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid rgba(0, 255, 65, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .data-card {
+            background: rgba(22, 33, 62, 0.6);
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .data-card:hover {
+            border-color: rgba(0, 212, 255, 0.5);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+        }
+
+        .value {
+            color: #00d4ff;
+            font-weight: bold;
+        }
+
+        .value.money {
+            color: #00ff41;
+        }
+
+        .value.negative {
+            color: #ff0040;
+        }
+
+        .draft-status {
+            background: #f39c12;
+            color: #1a1a2e;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .completed-status {
+            background: #00ff41;
+            color: #1a1a2e;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 12px;
+            text-align: left;
+            color: #00d4ff;
+            font-weight: normal;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        tr:hover {
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .loading {
+            text-align: center;
+            color: #00d4ff;
+            padding: 20px;
+            font-size: 1.2rem;
+        }
+
+        .error {
+            background: rgba(255, 0, 64, 0.1);
+            border: 1px solid #ff0040;
+            color: #ff6080;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        .account-category {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .category-asset {
+            background: rgba(0, 255, 65, 0.2);
+            color: #00ff41;
+        }
+
+        .category-liability {
+            background: rgba(255, 0, 64, 0.2);
+            color: #ff4060;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Balance Sheet Database Inspector</h1>
+        
+        <div class="controls">
+            <button onclick="loadDrafts()">Load Drafts</button>
+            <button onclick="loadLatestSnapshot()">Load Latest Snapshots</button>
+            <button onclick="loadAllAccounts()">Load All Accounts</button>
+            <button onclick="loadSealSkinAccounts()">Load Seal Skin Accounts</button>
+            <button onclick="clearAll()">Clear Display</button>
+        </div>
+
+        <div id="content">
+            <div class="loading">Click a button above to inspect database contents</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://192.168.1.6:5000/api';
+
+        function formatMoney(amount) {
+            if (amount === null || amount === undefined) return '$0.00';
+            const num = parseFloat(amount);
+            const formatted = Math.abs(num).toFixed(2);
+            return num < 0 ? `-$${formatted}` : `$${formatted}`;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleString();
+        }
+
+        async function loadDrafts() {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading">Loading drafts...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/wizard/drafts`);
+                const data = await response.json();
+                
+                if (!data.success) throw new Error(data.error);
+                
+                let html = '<div class="section">';
+                html += '<h2>📋 Draft Snapshots (' + data.drafts.length + ' found)</h2>';
+                
+                if (data.drafts.length === 0) {
+                    html += '<p>No drafts found in the database.</p>';
+                } else {
+                    for (const draft of data.drafts) {
+                        // Load detailed balance data for each draft
+                        const detailResponse = await fetch(`${API_BASE}/wizard/draft/${draft.id}`);
+                        const detailData = await detailResponse.json();
+                        
+                        html += `
+                            <div class="data-card">
+                                <div class="data-row">
+                                    <span class="label">Draft ID:</span>
+                                    <span class="value">#${draft.id}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="label">Status:</span>
+                                    <span class="draft-status">DRAFT</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="label">Store:</span>
+                                    <span class="value">${draft.store_name}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="label">Snapshot Date:</span>
+                                    <span class="value">${draft.snapshot_date}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="label">Total Assets:</span>
+                                    <span class="value money">${formatMoney(draft.total_assets)}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="label">Total Liabilities:</span>
+                                    <span class="value negative">${formatMoney(draft.total_liabilities)}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="label">Net Position:</span>
+                                    <span class="value money">${formatMoney(draft.net_position)}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="label">Balance Entries:</span>
+                                    <span class="value">${draft.balance_count}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="label">Created:</span>
+                                    <span class="timestamp">${formatDate(draft.created_at)}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="label">Last Updated:</span>
+                                    <span class="timestamp">${formatDate(draft.updated_at)}</span>
+                                </div>
+                        `;
+                        
+                        if (detailData.success && detailData.draft.balances.length > 0) {
+                            html += '<hr style="margin: 15px 0; border-color: rgba(0, 212, 255, 0.2);">';
+                            html += '<h4 style="color: #00d4ff; margin-bottom: 10px;">Account Balances:</h4>';
+                            html += '<table style="font-size: 0.85rem;">';
+                            html += '<tr><th>Account ID</th><th>Amount</th></tr>';
+                            for (const balance of detailData.draft.balances) {
+                                const amountClass = balance.amount < 0 ? 'negative' : 'money';
+                                html += `<tr>
+                                    <td>#${balance.account_id}</td>
+                                    <td class="${amountClass}">${formatMoney(balance.amount)}</td>
+                                </tr>`;
+                            }
+                            html += '</table>';
+                        }
+                        
+                        html += '</div>';
+                    }
+                }
+                html += '</div>';
+                content.innerHTML = html;
+                
+            } catch (error) {
+                content.innerHTML = `<div class="error">Error loading drafts: ${error.message}</div>`;
+            }
+        }
+
+        async function loadLatestSnapshot() {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading">Loading latest snapshots...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/snapshots?limit=10`);
+                const data = await response.json();
+                
+                if (!data.success) throw new Error(data.error);
+                
+                let html = '<div class="section">';
+                html += '<h2>📊 Recent Snapshots (Last 10)</h2>';
+                
+                if (data.snapshots.length === 0) {
+                    html += '<p>No snapshots found in the database.</p>';
+                } else {
+                    html += '<table>';
+                    html += '<thead><tr>';
+                    html += '<th>ID</th><th>Store</th><th>Date</th><th>Status</th>';
+                    html += '<th>Net Position</th><th>Assets</th><th>Liabilities</th>';
+                    html += '</tr></thead><tbody>';
+                    
+                    for (const snapshot of data.snapshots) {
+                        const statusClass = snapshot.status === 'completed' ? 'completed-status' : 'draft-status';
+                        html += `<tr>
+                            <td>#${snapshot.id}</td>
+                            <td>${snapshot.store?.name || 'Unknown'}</td>
+                            <td>${snapshot.snapshot_date}</td>
+                            <td><span class="${statusClass}">${snapshot.status?.toUpperCase() || 'UNKNOWN'}</span></td>
+                            <td class="money">${formatMoney(snapshot.net_position)}</td>
+                            <td class="money">${formatMoney(snapshot.total_assets)}</td>
+                            <td class="negative">${formatMoney(snapshot.total_liabilities)}</td>
+                        </tr>`;
+                    }
+                    
+                    html += '</tbody></table>';
+                }
+                html += '</div>';
+                content.innerHTML = html;
+                
+            } catch (error) {
+                content.innerHTML = `<div class="error">Error loading snapshots: ${error.message}</div>`;
+            }
+        }
+
+        async function loadAllAccounts() {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading">Loading all accounts...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/accounts`);
+                const data = await response.json();
+                
+                if (!data.success) throw new Error(data.error);
+                
+                let html = '<div class="section">';
+                html += '<h2>💳 All Accounts (' + data.accounts.length + ' total)</h2>';
+                
+                // Group accounts by store
+                const accountsByStore = {};
+                for (const account of data.accounts) {
+                    const storeId = account.store_id;
+                    if (!accountsByStore[storeId]) {
+                        accountsByStore[storeId] = [];
+                    }
+                    accountsByStore[storeId].push(account);
+                }
+                
+                html += '<div class="data-grid">';
+                for (const [storeId, accounts] of Object.entries(accountsByStore)) {
+                    const firstAccount = accounts[0];
+                    html += `<div class="data-card">
+                        <h3 style="color: #00ff41; margin-bottom: 10px;">Store ID: ${storeId}</h3>
+                        <table style="font-size: 0.85rem;">
+                            <thead>
+                                <tr>
+                                    <th>Account Name</th>
+                                    <th>Type</th>
+                                    <th>Category</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                    
+                    for (const account of accounts) {
+                        const categoryClass = account.account_type?.category === 'Asset' ? 'category-asset' : 'category-liability';
+                        html += `<tr>
+                            <td>${account.account_name}</td>
+                            <td>${account.account_type?.name || 'Unknown'}</td>
+                            <td><span class="account-category ${categoryClass}">${account.account_type?.category || 'Unknown'}</span></td>
+                        </tr>`;
+                    }
+                    
+                    html += '</tbody></table></div>';
+                }
+                html += '</div></div>';
+                
+                content.innerHTML = html;
+                
+            } catch (error) {
+                content.innerHTML = `<div class="error">Error loading accounts: ${error.message}</div>`;
+            }
+        }
+
+        async function loadSealSkinAccounts() {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading">Loading Seal Skin accounts...</div>';
+            
+            try {
+                // First get the Seal Skin store ID
+                const storesResponse = await fetch(`${API_BASE}/stores`);
+                const storesData = await storesResponse.json();
+                
+                if (!storesData.success) throw new Error(storesData.error);
+                
+                const sealSkin = storesData.stores.find(s => s.code === 'SEAL' || s.name === 'Seal Skin');
+                if (!sealSkin) {
+                    throw new Error('Seal Skin store not found');
+                }
+                
+                // Now get accounts for Seal Skin
+                const response = await fetch(`${API_BASE}/accounts?store_id=${sealSkin.id}`);
+                const data = await response.json();
+                
+                if (!data.success) throw new Error(data.error);
+                
+                let html = '<div class="section">';
+                html += `<h2>🦭 Seal Skin Accounts (${data.accounts.length} accounts)</h2>`;
+                html += `<p style="color: #00d4ff; margin-bottom: 15px;">Store ID: ${sealSkin.id} | Store Code: ${sealSkin.code}</p>`;
+                
+                // Group by account type
+                const byType = {};
+                for (const account of data.accounts) {
+                    const typeName = account.account_type?.name || 'Unknown';
+                    if (!byType[typeName]) {
+                        byType[typeName] = [];
+                    }
+                    byType[typeName].push(account);
+                }
+                
+                html += '<table>';
+                html += '<thead><tr>';
+                html += '<th>ID</th><th>Account Name</th><th>Type</th><th>Category</th><th>Bank</th><th>Account #</th>';
+                html += '</tr></thead><tbody>';
+                
+                for (const [typeName, accounts] of Object.entries(byType)) {
+                    for (const account of accounts) {
+                        const categoryClass = account.account_type?.category === 'Asset' ? 'category-asset' : 'category-liability';
+                        const isNew = account.account_name.includes('NEW') || account.created_at && new Date(account.created_at) > new Date(Date.now() - 3600000);
+                        const rowStyle = isNew ? 'background: rgba(0, 255, 65, 0.1);' : '';
+                        
+                        html += `<tr style="${rowStyle}">
+                            <td>#${account.id}</td>
+                            <td>${account.account_name} ${isNew ? '✨' : ''}</td>
+                            <td>${account.account_type?.name || 'Unknown'}</td>
+                            <td><span class="account-category ${categoryClass}">${account.account_type?.category || 'Unknown'}</span></td>
+                            <td>${account.bank?.name || '-'}</td>
+                            <td>${account.account_number || '-'}</td>
+                        </tr>`;
+                    }
+                }
+                
+                html += '</tbody></table>';
+                html += '</div>';
+                
+                content.innerHTML = html;
+                
+            } catch (error) {
+                content.innerHTML = `<div class="error">Error loading Seal Skin accounts: ${error.message}</div>`;
+            }
+        }
+
+        function clearAll() {
+            document.getElementById('content').innerHTML = '<div class="loading">Display cleared. Select an option above to inspect data.</div>';
+        }
+
+        // Auto-load drafts on page load
+        window.addEventListener('load', () => {
+            loadDrafts();
+        });
+    </script>
+</body>
+</html>

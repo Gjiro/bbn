@@ -498,6 +498,126 @@ def get_account_types():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@wizard_bp.route("/account-type", methods=["POST"])
+def create_account_type():
+    """Create a new account type/category"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data.get('name'):
+            return jsonify({"success": False, "error": "Name is required"}), 400
+        if not data.get('category'):
+            return jsonify({"success": False, "error": "Category is required"}), 400
+        
+        # Check if exists
+        existing = AccountType.query.filter_by(name=data['name']).first()
+        if existing:
+            return jsonify({"success": False, "error": "Account type already exists"}), 400
+        
+        account_type = AccountType(
+            name=data['name'],
+            category=data['category'],
+            sort_order=data.get('sort_order', 0)
+        )
+        
+        db.session.add(account_type)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "account_type": account_type.to_dict(),
+            "message": "Account type created successfully"
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@wizard_bp.route("/account-type/<int:type_id>", methods=["PUT"])
+def update_account_type(type_id):
+    """Update an account type"""
+    try:
+        data = request.get_json()
+        account_type = AccountType.query.get(type_id)
+        
+        if not account_type:
+            return jsonify({"success": False, "error": "Account type not found"}), 404
+        
+        # Update fields
+        if data.get('name'):
+            account_type.name = data['name']
+        if data.get('category'):
+            account_type.category = data['category']
+        if 'sort_order' in data:
+            account_type.sort_order = data['sort_order']
+        
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "account_type": account_type.to_dict(),
+            "message": "Account type updated successfully"
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@wizard_bp.route("/account-type/<int:type_id>", methods=["DELETE"])
+def delete_account_type(type_id):
+    """Delete an account type"""
+    try:
+        account_type = AccountType.query.get(type_id)
+        
+        if not account_type:
+            return jsonify({"success": False, "error": "Account type not found"}), 404
+        
+        # Check if any accounts use this type
+        accounts_count = Account.query.filter_by(account_type_id=type_id).count()
+        if accounts_count > 0:
+            return jsonify({"success": False, "error": f"Cannot delete: {accounts_count} accounts use this type"}), 400
+        
+        db.session.delete(account_type)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "message": "Account type deleted successfully"
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@wizard_bp.route("/account/<int:account_id>", methods=["PUT"])
+def update_account(account_id):
+    """Update an account"""
+    try:
+        data = request.get_json()
+        account = Account.query.get(account_id)
+        
+        if not account:
+            return jsonify({"success": False, "error": "Account not found"}), 404
+        
+        # Update fields
+        if data.get('account_name'):
+            account.account_name = data['account_name']
+        if data.get('account_type_id'):
+            account.account_type_id = data['account_type_id']
+        if 'bank_id' in data:
+            account.bank_id = data['bank_id']
+        if 'account_number' in data:
+            account.account_number = data['account_number']
+        
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "account": account.to_dict(),
+            "message": "Account updated successfully"
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @wizard_bp.route("/banks", methods=["GET"])
 def get_banks():
     """Get all available banks"""
@@ -510,6 +630,46 @@ def get_banks():
         })
         
     except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@wizard_bp.route("/bank", methods=["POST"])
+def create_bank():
+    """Create a new bank"""
+    try:
+        data = request.get_json()
+        
+        if not data.get('name'):
+            return jsonify({"success": False, "error": "Bank name is required"}), 400
+        
+        # Check if exists
+        existing = Bank.query.filter_by(name=data['name']).first()
+        if existing:
+            if not existing.is_active:
+                existing.is_active = True
+                db.session.commit()
+                return jsonify({
+                    "success": True,
+                    "bank": existing.to_dict(),
+                    "message": "Bank reactivated successfully"
+                })
+            else:
+                return jsonify({"success": False, "error": "Bank already exists"}), 400
+        
+        bank = Bank(
+            name=data['name'],
+            is_active=True
+        )
+        
+        db.session.add(bank)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "bank": bank.to_dict(),
+            "message": "Bank created successfully"
+        })
+    except Exception as e:
+        db.session.rollback()
         return jsonify({"success": False, "error": str(e)}), 500
 
 @wizard_bp.route("/delete-account/<int:account_id>", methods=["DELETE"])
