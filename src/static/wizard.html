@@ -14,7 +14,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f5f5f5;
-            padding-top: 120px; /* Added padding for sticky header */
+            padding-top: 120px;
         }
 
         .container {
@@ -26,7 +26,6 @@
             overflow: hidden;
         }
 
-        /* Sticky Header Styles */
         .header {
             background: #2c3e50;
             color: white;
@@ -88,7 +87,21 @@
             background: #2980b9;
         }
 
-        /* Header button styles */
+        .bulk-import-btn {
+            background: #9b59b6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .bulk-import-btn:hover {
+            background: #8e44ad;
+        }
+
         .btn-header-draft {
             background: #f39c12;
             color: white;
@@ -137,7 +150,7 @@
             display: flex;
             gap: 20px;
             padding: 20px;
-            margin-top: 20px; /* Space for fixed header */
+            margin-top: 20px;
         }
 
         .entries-panel {
@@ -151,7 +164,7 @@
             border-radius: 6px;
             height: fit-content;
             position: sticky;
-            top: 140px; /* Adjusted for sticky header height */
+            top: 140px;
         }
 
         .section {
@@ -423,7 +436,7 @@
             margin: 10px 20px;
             border-radius: 4px;
             display: none;
-            margin-top: 140px; /* Adjusted for sticky header */
+            margin-top: 140px;
         }
 
         .draft-list.active {
@@ -459,7 +472,20 @@
             background: #229954;
         }
 
-        /* Modal Styles */
+        .intercompany-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .intercompany-btn:hover {
+            background: #c0392b;
+        }
+
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -491,7 +517,7 @@
             border-bottom: 1px solid #e0e0e0;
         }
 
-        .modal-header h3 {
+        .modal-header h3, .modal-header h2 {
             margin: 0;
             color: #2c3e50;
         }
@@ -545,7 +571,6 @@
             box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
         }
 
-        /* Divider in header */
         .header-divider {
             width: 1px;
             height: 30px;
@@ -557,6 +582,148 @@
             font-size: 11px;
             color: #999;
             margin-top: 2px;
+        }
+
+        /* Bulk Import Modal Styles */
+        #bulkImportModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #bulkImportModal.active {
+            display: flex;
+        }
+
+        .bulk-modal-content {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bulk-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bulk-modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .bulk-modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .import-textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        .format-help {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 20px;
+        }
+
+        .preview-table th {
+            background: #f8f9fa;
+            padding: 8px;
+            text-align: left;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .preview-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .preview-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .status-new {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .import-stats {
+            display: flex;
+            gap: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stat-number {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .draft-status-badge {
+            background: #f39c12;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .draft-info-panel {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ffeeba;
+            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -576,10 +743,9 @@
                     <button onclick="loadDrafts()">My Drafts</button>
                     <button onclick="loadPreviousSnapshot()">Load Previous</button>
                     <button onclick="clearAll()">Clear All</button>
+                    <button class="bulk-import-btn" onclick="openBulkImport()">📋 Bulk Import</button>
                     <span class="draft-indicator" id="draftIndicator">DRAFT</span>
                 </div>
-                <button class="bulk-import-btn" onclick="openBulkImport()">📋 Bulk Import</button>
-
                 <div class="controls-right">
                     <button class="btn-header-draft" onclick="saveDraft()">💾 Save as Draft</button>
                     <div class="header-divider"></div>
@@ -593,16 +759,17 @@
 
         <div class="main-content">
             <div class="entries-panel">
-                <!-- Bank Accounts Section -->
                 <div class="section">
                     <div class="section-header">
                         <h2 class="section-title">Bank & Cash Accounts</h2>
-                        <button class="add-account-btn" onclick="openAddAccountModal()">+ Add Account</button>
+                        <div>
+                            <button class="add-account-btn" onclick="openAddAccountModal()">+ Add Account</button>
+                            <button class="intercompany-btn" onclick="openIntercompanyModal()">+ Intercompany</button>
+                        </div>
                     </div>
                     <div id="bankAccounts"></div>
                 </div>
 
-                <!-- Merchant Accounts Section -->
                 <div class="section">
                     <div class="section-header">
                         <h2 class="section-title">Merchant & Receivables</h2>
@@ -611,7 +778,6 @@
                     <div id="merchantAccounts"></div>
                 </div>
 
-                <!-- Inventory Section -->
                 <div class="section">
                     <div class="section-header">
                         <h2 class="section-title">Inventory</h2>
@@ -620,7 +786,6 @@
                     <div id="inventory"></div>
                 </div>
 
-                <!-- Other Assets Section -->
                 <div class="section">
                     <div class="section-header">
                         <h2 class="section-title">Other Assets</h2>
@@ -629,7 +794,6 @@
                     <div id="receivables"></div>
                 </div>
 
-                <!-- Liabilities Section -->
                 <div class="section">
                     <div class="section-header">
                         <h2 class="section-title">Liabilities</h2>
@@ -641,6 +805,15 @@
 
             <div class="summary-panel">
                 <h3 class="summary-title">Summary</h3>
+                
+                <div id="draftInfoPanel" class="draft-info-panel" style="display: none;">
+                    <strong style="color: #856404;">Draft Status</strong>
+                    <div style="font-size: 12px; margin-top: 5px;">
+                        <div>Draft ID: <span id="currentDraftIdDisplay">-</span></div>
+                        <div>Last Saved: <span id="lastSavedTime">-</span></div>
+                        <div>Balances Saved: <span id="balanceCount">0</span></div>
+                    </div>
+                </div>
                 
                 <div class="summary-section">
                     <div class="summary-item total-assets">
@@ -723,6 +896,87 @@
         </div>
     </div>
 
+    <!-- Intercompany Modal -->
+    <div id="intercompanyModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create Intercompany Accounts</h3>
+                <button class="modal-close" onclick="closeIntercompanyModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: #666; margin-bottom: 20px;">
+                    This will create paired accounts: an asset (receivable) for the creditor store
+                    and a liability (payable) for the debtor store.
+                </p>
+                
+                <div class="form-group">
+                    <label>Creditor Store (Who is owed money?) *</label>
+                    <select id="creditorStore" class="form-input">
+                        <option value="">Select store...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Debtor Store (Who owes money?) *</label>
+                    <select id="debtorStore" class="form-input">
+                        <option value="">Select store...</option>
+                    </select>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 20px;">
+                    <strong>This will create:</strong>
+                    <div id="accountPreview" style="margin-top: 10px; font-size: 0.9rem; color: #555;">
+                        Select both stores to see preview...
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeIntercompanyModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="createIntercompanyAccounts()">Create Accounts</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Import Modal -->
+    <div id="bulkImportModal">
+        <div class="bulk-modal-content">
+            <div class="bulk-modal-header">
+                <h2>Bulk Import Accounts</h2>
+                <button class="modal-close" onclick="closeBulkImport()">×</button>
+            </div>
+            <div class="bulk-modal-body">
+                <div class="format-help">
+                    <strong>Format Instructions:</strong><br>
+                    Paste your accounts data in this format (tab or space separated):<br>
+                    <code>Category  StoreName  Bank/Type  AccountName</code><br>
+                    Example: <code>Asset  Seal Skin  Chase  PLAT BUS CHECKING (...0172)</code><br><br>
+                    Categories: Asset or Liability<br>
+                    The system will auto-detect account types and parse account numbers from (...XXXX) format
+                </div>
+
+                <div>
+                    <label><strong>Paste Your Account Data:</strong></label>
+                    <textarea id="bulkImportData" class="import-textarea" placeholder="Paste your account data here..."></textarea>
+                </div>
+
+                <button class="btn btn-primary" onclick="parseImportData()" style="margin-top: 10px;">Parse & Preview</button>
+
+                <div id="importPreview" style="display: none;">
+                    <h3 style="margin-top: 20px;">Import Preview</h3>
+                    <div id="importStats" class="import-stats"></div>
+                    <div id="previewTableContainer"></div>
+                </div>
+            </div>
+            <div class="bulk-modal-footer">
+                <div id="importStatus"></div>
+                <div>
+                    <button class="btn btn-secondary" onclick="closeBulkImport()">Cancel</button>
+                    <button class="btn btn-primary" id="confirmImportBtn" onclick="confirmBulkImport()" style="display: none;">Import Accounts</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Global state
         let sessionId = null;
@@ -731,13 +985,21 @@
         let currentDraftId = null;
         let accountTypes = [];
         let banks = [];
+        let parsedAccounts = [];
+        let allStores = [];
+        let currentDraftBalances = {}; // Store draft balances globally
 
         // Initialize on load
         document.addEventListener('DOMContentLoaded', function() {
             initializeWizard();
-            // Don't set today's date automatically - let user choose any date
             loadAccountMetadata();
             document.getElementById('storeSelect').addEventListener('change', onStoreChange);
+            document.getElementById('creditorStore').addEventListener('change', updateAccountPreview);
+            document.getElementById('debtorStore').addEventListener('change', updateAccountPreview);
+            
+            // Set today's date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('snapshotDate').value = today;
         });
 
         // Initialize wizard
@@ -752,6 +1014,7 @@
                 
                 if (data.success) {
                     sessionId = data.session_id;
+                    allStores = data.stores;
                     populateStores(data.stores);
                 } else {
                     showMessage('Failed to initialize: ' + data.error, 'error');
@@ -776,7 +1039,7 @@
             });
         }
 
-        // Handle store selection
+        // Handle store selection - FIXED to maintain draft values
         async function onStoreChange() {
             const storeId = document.getElementById('storeSelect').value;
             if (!storeId) {
@@ -794,6 +1057,11 @@
                 if (data.success) {
                     storeAccounts = data.accounts;
                     renderAccounts();
+                    
+                    // Restore draft values if they exist
+                    if (currentDraftId && currentDraftBalances) {
+                        restoreDraftValues();
+                    }
                 } else {
                     showMessage('Failed to load accounts: ' + data.error, 'error');
                 }
@@ -801,6 +1069,30 @@
                 showMessage('Network error: ' + error.message, 'error');
             } finally {
                 showLoading(false);
+            }
+        }
+
+        // Restore draft values after changing stores
+        function restoreDraftValues() {
+            if (!currentDraftBalances || Object.keys(currentDraftBalances).length === 0) {
+                console.log('No draft balances to restore');
+                return;
+            }
+            
+            let restoredCount = 0;
+            for (const [accountId, value] of Object.entries(currentDraftBalances)) {
+                const input = document.querySelector(`input[data-account-id="${accountId}"]`);
+                if (input) {
+                    input.value = Math.abs(value);
+                    input.classList.add('has-value');
+                    restoredCount++;
+                    console.log(`Restored value ${value} for account ${accountId}`);
+                }
+            }
+            
+            if (restoredCount > 0) {
+                updateSummary();
+                console.log(`Restored ${restoredCount} draft values`);
             }
         }
 
@@ -816,7 +1108,6 @@
             document.querySelectorAll('.account-input').forEach(input => {
                 input.addEventListener('input', function() {
                     updateSummary();
-                    // Add visual indicator for fields with values
                     if (this.value && parseFloat(this.value) !== 0) {
                         this.classList.add('has-value');
                     } else {
@@ -886,7 +1177,6 @@
                 
                 if (data.success) {
                     showMessage(`Account "${accountName}" deleted successfully`, 'success');
-                    // Reload the accounts for this store
                     await onStoreChange();
                 } else {
                     showMessage(`Failed to delete account: ${data.error}`, 'error');
@@ -983,19 +1273,17 @@
 
         // Clear all inputs
         function clearAll() {
-            if (confirm('Clear all entered values?')) {
+            if (confirm('Clear all entered values? This will NOT delete the saved draft.')) {
                 document.querySelectorAll('.account-input').forEach(input => {
                     input.value = '';
                     input.classList.remove('has-value');
                 });
                 updateSummary();
-                currentDraftId = null;
-                document.getElementById('draftIndicator').classList.remove('active');
-                document.getElementById('deleteDraftBtn').style.display = 'none';
+                // Don't reset draft ID or balances - they stay in database
             }
         }
 
-        // Save as draft
+        // FIXED Save as draft function
         async function saveDraft() {
             if (!currentStoreId) {
                 showMessage('Please select a store', 'error');
@@ -1009,6 +1297,15 @@
             }
             
             const balances = collectBalances();
+            
+            // Don't save if no balances
+            if (!balances || balances.length === 0) {
+                showMessage('No balances to save. Please enter at least one value.', 'error');
+                return;
+            }
+            
+            console.log('Saving draft with balances:', balances);
+            console.log('Current draft ID:', currentDraftId);
             
             showLoading(true);
             try {
@@ -1027,9 +1324,20 @@
                 
                 if (data.success) {
                     currentDraftId = data.draft_id;
+                    
+                    // Store draft balances globally
+                    currentDraftBalances = {};
+                    balances.forEach(b => {
+                        currentDraftBalances[b.account_id] = b.amount;
+                    });
+                    
                     document.getElementById('draftIndicator').classList.add('active');
                     document.getElementById('deleteDraftBtn').style.display = 'inline-block';
-                    showMessage('Draft saved successfully!', 'success');
+                    document.getElementById('draftInfoPanel').style.display = 'block';
+                    document.getElementById('currentDraftIdDisplay').textContent = '#' + data.draft_id;
+                    document.getElementById('lastSavedTime').textContent = new Date().toLocaleTimeString();
+                    document.getElementById('balanceCount').textContent = balances.length;
+                    showMessage(`Draft saved successfully! (${balances.length} balances)`, 'success');
                 } else {
                     showMessage('Failed to save draft: ' + data.error, 'error');
                 }
@@ -1083,7 +1391,9 @@
                     showMessage('Snapshot published successfully!', 'success');
                     clearAll();
                     currentDraftId = null;
+                    currentDraftBalances = {};
                     document.getElementById('draftIndicator').classList.remove('active');
+                    document.getElementById('draftInfoPanel').style.display = 'none';
                 } else {
                     showMessage('Failed to publish: ' + data.error, 'error');
                 }
@@ -1113,7 +1423,7 @@
             }
         }
 
-        // Display drafts
+        // Display drafts with balance count
         function displayDrafts(drafts) {
             const draftList = document.getElementById('draftList');
             let html = '<h4>Your Drafts:</h4>';
@@ -1121,7 +1431,9 @@
             drafts.forEach(draft => {
                 html += `
                     <div class="draft-item">
-                        <span>${draft.store_name} - ${draft.snapshot_date}</span>
+                        <span>${draft.store_name} - ${draft.snapshot_date} 
+                        <span class="draft-status-badge">${draft.balance_count} balances</span>
+                        </span>
                         <button class="btn btn-secondary" onclick="loadSpecificDraft(${draft.id})">Load</button>
                     </div>
                 `;
@@ -1135,36 +1447,63 @@
             }, 10000);
         }
 
-        // Load specific draft
+        // Load specific draft - FIXED to properly restore values
         async function loadSpecificDraft(draftId) {
             showLoading(true);
             try {
                 const response = await fetch(`/api/wizard/draft/${draftId}`);
                 const data = await response.json();
                 
+                console.log('Loading draft data:', data);
+                
                 if (data.success) {
+                    // Store draft ID first
+                    currentDraftId = draftId;
+                    
+                    // Set store and date
                     document.getElementById('storeSelect').value = data.draft.store_id;
                     document.getElementById('snapshotDate').value = data.draft.snapshot_date;
                     
-                    await onStoreChange();
-                    
-                    for (const balance of data.draft.balances) {
-                        const input = document.querySelector(`input[data-account-id="${balance.account_id}"]`);
-                        if (input) {
-                            input.value = Math.abs(balance.amount);
-                            input.classList.add('has-value');
-                        }
+                    // Store balances globally BEFORE loading accounts
+                    currentDraftBalances = {};
+                    if (data.draft.balances && data.draft.balances.length > 0) {
+                        data.draft.balances.forEach(balance => {
+                            currentDraftBalances[balance.account_id] = balance.amount;
+                        });
                     }
                     
-                    updateSummary();
-                    currentDraftId = draftId;
+                    // Load the store's accounts
+                    await onStoreChange();
+                    
+                    // Force restore values after a brief delay to ensure DOM is ready
+                    setTimeout(() => {
+                        for (const [accountId, value] of Object.entries(currentDraftBalances)) {
+                            const input = document.querySelector(`input[data-account-id="${accountId}"]`);
+                            if (input) {
+                                input.value = Math.abs(value);
+                                input.classList.add('has-value');
+                                console.log(`Restored value ${value} for account ${accountId}`);
+                            } else {
+                                console.log(`Could not find input for account ${accountId}`);
+                            }
+                        }
+                        updateSummary();
+                    }, 100);
+                    
+                    // Update UI elements
                     document.getElementById('draftIndicator').classList.add('active');
                     document.getElementById('deleteDraftBtn').style.display = 'inline-block';
                     document.getElementById('draftList').classList.remove('active');
-                    showMessage('Draft loaded successfully', 'success');
+                    document.getElementById('draftInfoPanel').style.display = 'block';
+                    document.getElementById('currentDraftIdDisplay').textContent = '#' + draftId;
+                    document.getElementById('lastSavedTime').textContent = new Date(data.draft.updated_at || data.draft.created_at).toLocaleTimeString();
+                    document.getElementById('balanceCount').textContent = data.draft.balance_count || data.draft.balances.length || 0;
+                    
+                    showMessage(`Loaded draft #${draftId} with ${data.draft.balance_count || data.draft.balances.length} balances`, 'success');
                 }
             } catch (error) {
-                showMessage('Failed to load draft', 'error');
+                console.error('Failed to load draft:', error);
+                showMessage('Failed to load draft: ' + error.message, 'error');
             } finally {
                 showLoading(false);
             }
@@ -1174,7 +1513,7 @@
         async function deleteDraft() {
             if (!currentDraftId) return;
             
-            if (!confirm('Delete this draft?')) return;
+            if (!confirm('Delete this draft? This will remove all saved balances.')) return;
             
             showLoading(true);
             try {
@@ -1184,9 +1523,12 @@
                 
                 if (response.ok) {
                     currentDraftId = null;
+                    currentDraftBalances = {};
                     document.getElementById('draftIndicator').classList.remove('active');
                     document.getElementById('deleteDraftBtn').style.display = 'none';
+                    document.getElementById('draftInfoPanel').style.display = 'none';
                     showMessage('Draft deleted', 'info');
+                    clearAll();
                 }
             } catch (error) {
                 showMessage('Failed to delete draft', 'error');
@@ -1198,7 +1540,6 @@
         // Account Management Functions
         async function loadAccountMetadata() {
             try {
-                // Load account types
                 const typesResponse = await fetch('/api/wizard/account-types');
                 const typesData = await typesResponse.json();
                 if (typesData.success) {
@@ -1206,7 +1547,6 @@
                     populateAccountTypes();
                 }
                 
-                // Load banks
                 const banksResponse = await fetch('/api/wizard/banks');
                 const banksData = await banksResponse.json();
                 if (banksData.success) {
@@ -1326,6 +1666,351 @@
             }
         }
 
+        // Intercompany Functions
+        function openIntercompanyModal() {
+            document.getElementById('intercompanyModal').style.display = 'flex';
+            populateIntercompanyStores();
+        }
+
+        function closeIntercompanyModal() {
+            document.getElementById('intercompanyModal').style.display = 'none';
+            document.getElementById('creditorStore').value = '';
+            document.getElementById('debtorStore').value = '';
+            document.getElementById('accountPreview').innerHTML = 'Select both stores to see preview...';
+        }
+
+        function populateIntercompanyStores() {
+            const creditorSelect = document.getElementById('creditorStore');
+            const debtorSelect = document.getElementById('debtorStore');
+            
+            creditorSelect.innerHTML = '<option value="">Select store...</option>';
+            debtorSelect.innerHTML = '<option value="">Select store...</option>';
+            
+            allStores.forEach(store => {
+                creditorSelect.innerHTML += `<option value="${store.id}">${store.name} (${store.code})</option>`;
+                debtorSelect.innerHTML += `<option value="${store.id}">${store.name} (${store.code})</option>`;
+            });
+        }
+
+        function updateAccountPreview() {
+            const creditorSelect = document.getElementById('creditorStore');
+            const debtorSelect = document.getElementById('debtorStore');
+            const preview = document.getElementById('accountPreview');
+            
+            if (creditorSelect.value && debtorSelect.value) {
+                const creditorName = creditorSelect.options[creditorSelect.selectedIndex].text.split(' (')[0];
+                const debtorName = debtorSelect.options[debtorSelect.selectedIndex].text.split(' (')[0];
+                
+                if (creditorSelect.value === debtorSelect.value) {
+                    preview.innerHTML = '<span style="color: #e74c3c;">Cannot create intercompany account with the same store!</span>';
+                } else {
+                    preview.innerHTML = `
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #27ae60;">Asset for ${creditorName}:</strong><br>
+                            "${debtorName} owes ${creditorName}"
+                        </div>
+                        <div>
+                            <strong style="color: #e74c3c;">Liability for ${debtorName}:</strong><br>
+                            "Owed to ${creditorName}"
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        async function createIntercompanyAccounts() {
+            const creditorStoreId = document.getElementById('creditorStore').value;
+            const debtorStoreId = document.getElementById('debtorStore').value;
+            
+            if (!creditorStoreId || !debtorStoreId) {
+                showMessage('Please select both stores', 'error');
+                return;
+            }
+            
+            if (creditorStoreId === debtorStoreId) {
+                showMessage('Cannot create intercompany account with the same store', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            try {
+                const response = await fetch('/api/wizard/add-intercompany-accounts', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        creditor_store_id: parseInt(creditorStoreId),
+                        debtor_store_id: parseInt(debtorStoreId)
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    closeIntercompanyModal();
+                    if (currentStoreId == creditorStoreId || currentStoreId == debtorStoreId) {
+                        await onStoreChange();
+                    }
+                } else {
+                    showMessage('Failed to create accounts: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Network error: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Bulk Import Functions (unchanged)
+        function openBulkImport() {
+            document.getElementById('bulkImportModal').classList.add('active');
+            document.getElementById('bulkImportData').value = '';
+            document.getElementById('importPreview').style.display = 'none';
+            document.getElementById('confirmImportBtn').style.display = 'none';
+            parsedAccounts = [];
+        }
+
+        function closeBulkImport() {
+            document.getElementById('bulkImportModal').classList.remove('active');
+        }
+
+        function parseImportData() {
+            const rawData = document.getElementById('bulkImportData').value.trim();
+            if (!rawData) {
+                alert('Please paste your account data first');
+                return;
+            }
+
+            parsedAccounts = [];
+            const lines = rawData.split('\n');
+            const errors = [];
+
+            const bankMapping = {
+                'Chase': 'Chase',
+                'Capital One': 'Capital One',
+                'CapitalOne': 'Capital One',
+                'Amazon': 'Amazon',
+                'Shopify': 'Shopify',
+                'Paypal': 'PayPal',
+                'PayPal': 'PayPal',
+                'Chase Points': 'Points System',
+                'ChasePoints': 'Points System',
+                'Points': 'Points System'
+            };
+
+            const accountTypePatterns = {
+                'PLAT BUS CHECKING': 'Bank Checking',
+                'BUS COMPLETE CHK': 'Bank Checking',
+                'BUS SELECT HY SAV': 'Bank Savings',
+                'Business Basic Checking': 'Bank Checking',
+                'Business Premier Check': 'Bank Checking',
+                'Business Advantage Sav': 'Bank Savings',
+                'AmazonSellerCentral': 'Merchant Account',
+                'Amazon': 'Merchant Account',
+                'Points': 'Points',
+                'Merchant': 'Merchant Account',
+                'Shopify': 'Merchant Account',
+                'Paypal': 'Merchant Account',
+                'PayPal': 'Merchant Account',
+                'LIVE INVENTORY': 'Inventory',
+                'Order Q': 'Order Receivable',
+                'owes': 'Intercompany Receivable',
+                'CarLoans': 'Loan Receivable',
+                'IRS REFUND': 'Tax Refund',
+                'Balkans.io': 'Order Receivable',
+                'Chase CC': 'Credit Card',
+                'CC': 'Credit Card',
+                'Ink Preferred': 'Credit Card',
+                'Ink Business': 'Credit Card',
+                'Ink Unlimited': 'Credit Card',
+                'BUSINESS CARD': 'Credit Card',
+                'Pending Shipments': 'Pending Shipments',
+                'Pending Refunds': 'Pending Refunds',
+                'UPS/': 'Shipping Payable',
+                'Management Fee': 'Management Fee',
+                'Ads': 'Advertising Payable',
+                'Container Duties': 'Container Duties',
+                'Rent': 'Rent Payable',
+                'Sales Tax': 'Sales Tax Payable',
+                'WorldWeav': 'Vendor Payable'
+            };
+
+            lines.forEach((line, index) => {
+                if (!line.trim()) return;
+
+                const parts = line.split('\t').filter(p => p.trim());
+                if (parts.length < 3) {
+                    const spaceParts = line.split(/\s{2,}/).filter(p => p.trim());
+                    if (spaceParts.length >= 3) {
+                        parts.push(...spaceParts);
+                    } else {
+                        const words = line.split(/\s+/).filter(p => p.trim());
+                        if (words.length >= 4) {
+                            parts[0] = words[0];
+                            parts[1] = words[1] === 'Seal' && words[2] === 'Skin' ? 'Seal Skin' :
+                                      words[1] === 'Slice' ? `${words[1]} ${words[2]}` : words[1];
+                            const startIdx = parts[1].includes('Slice') || parts[1].includes('Seal') ? 3 : 2;
+                            parts[2] = words[startIdx];
+                            parts[3] = words.slice(startIdx + 1).join(' ');
+                        }
+                    }
+                }
+
+                if (parts.length < 4) {
+                    errors.push(`Line ${index + 1}: Invalid format`);
+                    return;
+                }
+
+                const category = parts[0];
+                const storeName = parts[1];
+                const bankOrType = parts[2];
+                const accountName = parts.slice(3).join(' ');
+
+                const accountNumberMatch = accountName.match(/\(\.\.\.(\w+)\)/);
+                const accountNumber = accountNumberMatch ? accountNumberMatch[1] : null;
+
+                let accountType = null;
+                for (const [pattern, type] of Object.entries(accountTypePatterns)) {
+                    if (accountName.includes(pattern) || bankOrType.includes(pattern)) {
+                        accountType = type;
+                        break;
+                    }
+                }
+
+                if (!accountType) {
+                    if (category === 'Asset') {
+                        accountType = bankOrType.includes('Chase') || bankOrType.includes('Capital') ?
+                                    'Bank Checking' : 'Merchant Account';
+                    } else {
+                        accountType = 'Vendor Payable';
+                    }
+                }
+
+                const standardBank = bankMapping[bankOrType] || bankOrType;
+
+                parsedAccounts.push({
+                    category: category,
+                    storeName: storeName,
+                    bank: standardBank === accountName ? null : standardBank,
+                    accountName: accountName,
+                    accountNumber: accountNumber,
+                    accountType: accountType,
+                    status: 'new'
+                });
+            });
+
+            displayImportPreview();
+        }
+
+        function displayImportPreview() {
+            if (parsedAccounts.length === 0) {
+                alert('No valid accounts found to import');
+                return;
+            }
+
+            const stats = {
+                total: parsedAccounts.length,
+                assets: parsedAccounts.filter(a => a.category === 'Asset').length,
+                liabilities: parsedAccounts.filter(a => a.category === 'Liability').length
+            };
+
+            document.getElementById('importStats').innerHTML = `
+                <div class="stat-item">
+                    <span class="stat-number">${stats.total}</span>
+                    <span>Total Accounts</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" style="color: #27ae60;">${stats.assets}</span>
+                    <span>Assets</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" style="color: #e74c3c;">${stats.liabilities}</span>
+                    <span>Liabilities</span>
+                </div>
+            `;
+
+            let tableHtml = `
+                <table class="preview-table">
+                    <thead>
+                        <tr>
+                            <th>Store</th>
+                            <th>Category</th>
+                            <th>Account Type</th>
+                            <th>Bank</th>
+                            <th>Account Name</th>
+                            <th>Account #</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            parsedAccounts.forEach(account => {
+                tableHtml += `
+                    <tr>
+                        <td>${account.storeName}</td>
+                        <td><span style="color: ${account.category === 'Asset' ? '#27ae60' : '#e74c3c'}">${account.category}</span></td>
+                        <td>${account.accountType}</td>
+                        <td>${account.bank || '-'}</td>
+                        <td>${account.accountName}</td>
+                        <td>${account.accountNumber || '-'}</td>
+                        <td><span class="status-badge status-${account.status}">${account.status.toUpperCase()}</span></td>
+                    </tr>
+                `;
+            });
+
+            tableHtml += '</tbody></table>';
+            
+            document.getElementById('previewTableContainer').innerHTML = tableHtml;
+            document.getElementById('importPreview').style.display = 'block';
+            document.getElementById('confirmImportBtn').style.display = 'inline-block';
+        }
+
+        async function confirmBulkImport() {
+            if (parsedAccounts.length === 0) {
+                alert('No accounts to import');
+                return;
+            }
+
+            if (!confirm(`Import ${parsedAccounts.length} accounts? This cannot be undone.`)) {
+                return;
+            }
+
+            document.getElementById('importStatus').innerHTML = 'Importing accounts...';
+            const importBtn = document.getElementById('confirmImportBtn');
+            importBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/wizard/bulk-import', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({accounts: parsedAccounts})
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('importStatus').innerHTML =
+                        `<span style="color: green;">✓ Successfully imported ${data.created} accounts!</span>`;
+                    
+                    setTimeout(() => {
+                        closeBulkImport();
+                        if (window.currentStoreId) {
+                            window.onStoreChange();
+                        }
+                    }, 2000);
+                } else {
+                    document.getElementById('importStatus').innerHTML =
+                        `<span style="color: red;">Error: ${data.error}</span>`;
+                    importBtn.disabled = false;
+                }
+            } catch (error) {
+                document.getElementById('importStatus').innerHTML =
+                    `<span style="color: red;">Network error: ${error.message}</span>`;
+                importBtn.disabled = false;
+            }
+        }
+
         // Collect balances from form
         function collectBalances() {
             const balances = [];
@@ -1338,6 +2023,7 @@
                     });
                 }
             });
+            console.log('Collected balances:', balances);
             return balances;
         }
 
