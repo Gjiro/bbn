@@ -1,0 +1,474 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Import Accounts</title>
+    <style>
+        .bulk-import-btn {
+            background: #9b59b6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .bulk-import-btn:hover {
+            background: #8e44ad;
+        }
+
+        /* Bulk Import Modal Styles */
+        #bulkImportModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #bulkImportModal.active {
+            display: flex;
+        }
+
+        .bulk-modal-content {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bulk-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bulk-modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .bulk-modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .import-textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        .format-help {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 20px;
+        }
+
+        .preview-table th {
+            background: #f8f9fa;
+            padding: 8px;
+            text-align: left;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .preview-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .preview-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .status-new {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-exists {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .import-stats {
+            display: flex;
+            gap: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stat-number {
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Add this button to your header controls -->
+    <button class="bulk-import-btn" onclick="openBulkImport()">📋 Bulk Import</button>
+
+    <!-- Bulk Import Modal -->
+    <div id="bulkImportModal">
+        <div class="bulk-modal-content">
+            <div class="bulk-modal-header">
+                <h2>Bulk Import Accounts</h2>
+                <button class="modal-close" onclick="closeBulkImport()">×</button>
+            </div>
+            <div class="bulk-modal-body">
+                <div class="format-help">
+                    <strong>Format Instructions:</strong><br>
+                    Paste your accounts data in this format (tab or space separated):<br>
+                    <code>Category  StoreName  Bank/Type  AccountName</code><br>
+                    Example: <code>Asset  Seal Skin  Chase  PLAT BUS CHECKING (...0172)</code><br><br>
+                    Categories: Asset or Liability<br>
+                    The system will auto-detect account types and parse account numbers from (...XXXX) format
+                </div>
+
+                <div>
+                    <label><strong>Paste Your Account Data:</strong></label>
+                    <textarea id="bulkImportData" class="import-textarea" placeholder="Paste your account data here..."></textarea>
+                </div>
+
+                <button class="btn btn-primary" onclick="parseImportData()" style="margin-top: 10px;">Parse & Preview</button>
+
+                <div id="importPreview" style="display: none;">
+                    <h3 style="margin-top: 20px;">Import Preview</h3>
+                    <div id="importStats" class="import-stats"></div>
+                    <div id="previewTableContainer"></div>
+                </div>
+            </div>
+            <div class="bulk-modal-footer">
+                <div id="importStatus"></div>
+                <div>
+                    <button class="btn btn-secondary" onclick="closeBulkImport()">Cancel</button>
+                    <button class="btn btn-primary" id="confirmImportBtn" onclick="confirmBulkImport()" style="display: none;">Import Accounts</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let parsedAccounts = [];
+
+        function openBulkImport() {
+            document.getElementById('bulkImportModal').classList.add('active');
+            document.getElementById('bulkImportData').value = '';
+            document.getElementById('importPreview').style.display = 'none';
+            document.getElementById('confirmImportBtn').style.display = 'none';
+            parsedAccounts = [];
+        }
+
+        function closeBulkImport() {
+            document.getElementById('bulkImportModal').classList.remove('active');
+        }
+
+        function parseImportData() {
+            const rawData = document.getElementById('bulkImportData').value.trim();
+            if (!rawData) {
+                alert('Please paste your account data first');
+                return;
+            }
+
+            parsedAccounts = [];
+            const lines = rawData.split('\n');
+            const errors = [];
+
+            // Map common bank/type names to standardized versions
+            const bankMapping = {
+                'Chase': 'Chase',
+                'Capital One': 'Capital One',
+                'CapitalOne': 'Capital One',
+                'Amazon': 'Amazon',
+                'Shopify': 'Shopify',
+                'Paypal': 'PayPal',
+                'PayPal': 'PayPal',
+                'Chase Points': 'Points System',
+                'ChasePoints': 'Points System',
+                'Points': 'Points System'
+            };
+
+            // Map account type patterns
+            const accountTypePatterns = {
+                // Assets
+                'PLAT BUS CHECKING': 'Bank Checking',
+                'BUS COMPLETE CHK': 'Bank Checking',
+                'BUS SELECT HY SAV': 'Bank Savings',
+                'Business Basic Checking': 'Bank Checking',
+                'Business Premier Check': 'Bank Checking',
+                'Business Advantage Sav': 'Bank Savings',
+                'AmazonSellerCentral': 'Merchant Account',
+                'Amazon': 'Merchant Account',
+                'Points': 'Points',
+                'Merchant': 'Merchant Account',
+                'Shopify': 'Merchant Account',
+                'Paypal': 'Merchant Account',
+                'PayPal': 'Merchant Account',
+                'LIVE INVENTORY': 'Inventory',
+                'Order Q': 'Order Receivable',
+                'owes': 'Intercompany Receivable',
+                'CarLoans': 'Loan Receivable',
+                'IRS REFUND': 'Tax Refund',
+                'Balkans.io': 'Order Receivable',
+                
+                // Liabilities
+                'Chase CC': 'Credit Card',
+                'CC': 'Credit Card',
+                'Ink Preferred': 'Credit Card',
+                'Ink Business': 'Credit Card',
+                'Ink Unlimited': 'Credit Card',
+                'BUSINESS CARD': 'Credit Card',
+                'Pending Shipments': 'Pending Shipments',
+                'Pending Refunds': 'Pending Refunds',
+                'UPS/': 'Shipping Payable',
+                'Management Fee': 'Management Fee',
+                'Ads': 'Advertising Payable',
+                'Container Duties': 'Container Duties',
+                'Rent': 'Rent Payable',
+                'Sales Tax': 'Sales Tax Payable',
+                'WorldWeav': 'Vendor Payable'
+            };
+
+            lines.forEach((line, index) => {
+                if (!line.trim()) return;
+
+                // Try to parse the line - handle both tab and multiple space separation
+                const parts = line.split('\t').filter(p => p.trim());
+                if (parts.length < 3) {
+                    // Try splitting by multiple spaces
+                    const spaceParts = line.split(/\s{2,}/).filter(p => p.trim());
+                    if (spaceParts.length >= 3) {
+                        parts.push(...spaceParts);
+                    } else {
+                        // Try splitting by single spaces and reconstructing
+                        const words = line.split(/\s+/).filter(p => p.trim());
+                        if (words.length >= 4) {
+                            // Assume: Category StoreName Bank/Type ...rest is account name
+                            parts[0] = words[0];
+                            parts[1] = words[1] === 'Seal' && words[2] === 'Skin' ? 'Seal Skin' : 
+                                      words[1] === 'Slice' ? `${words[1]} ${words[2]}` : words[1];
+                            const startIdx = parts[1].includes('Slice') || parts[1].includes('Seal') ? 3 : 2;
+                            parts[2] = words[startIdx];
+                            parts[3] = words.slice(startIdx + 1).join(' ');
+                        }
+                    }
+                }
+
+                if (parts.length < 4) {
+                    errors.push(`Line ${index + 1}: Invalid format`);
+                    return;
+                }
+
+                const category = parts[0];
+                const storeName = parts[1];
+                const bankOrType = parts[2];
+                const accountName = parts.slice(3).join(' ');
+
+                // Extract account number from (...XXXX) pattern
+                const accountNumberMatch = accountName.match(/\(\.\.\.(\w+)\)/);
+                const accountNumber = accountNumberMatch ? accountNumberMatch[1] : null;
+
+                // Determine account type based on patterns
+                let accountType = null;
+                for (const [pattern, type] of Object.entries(accountTypePatterns)) {
+                    if (accountName.includes(pattern) || bankOrType.includes(pattern)) {
+                        accountType = type;
+                        break;
+                    }
+                }
+
+                // Default account types if not detected
+                if (!accountType) {
+                    if (category === 'Asset') {
+                        accountType = bankOrType.includes('Chase') || bankOrType.includes('Capital') ? 
+                                    'Bank Checking' : 'Merchant Account';
+                    } else {
+                        accountType = 'Vendor Payable';
+                    }
+                }
+
+                // Standardize bank name
+                const standardBank = bankMapping[bankOrType] || bankOrType;
+
+                parsedAccounts.push({
+                    category: category,
+                    storeName: storeName,
+                    bank: standardBank === accountName ? null : standardBank,
+                    accountName: accountName,
+                    accountNumber: accountNumber,
+                    accountType: accountType,
+                    status: 'new'
+                });
+            });
+
+            // Display preview
+            displayImportPreview();
+        }
+
+        function displayImportPreview() {
+            if (parsedAccounts.length === 0) {
+                alert('No valid accounts found to import');
+                return;
+            }
+
+            // Count statistics
+            const stats = {
+                total: parsedAccounts.length,
+                assets: parsedAccounts.filter(a => a.category === 'Asset').length,
+                liabilities: parsedAccounts.filter(a => a.category === 'Liability').length
+            };
+
+            // Display stats
+            document.getElementById('importStats').innerHTML = `
+                <div class="stat-item">
+                    <span class="stat-number">${stats.total}</span>
+                    <span>Total Accounts</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" style="color: #27ae60;">${stats.assets}</span>
+                    <span>Assets</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" style="color: #e74c3c;">${stats.liabilities}</span>
+                    <span>Liabilities</span>
+                </div>
+            `;
+
+            // Create preview table
+            let tableHtml = `
+                <table class="preview-table">
+                    <thead>
+                        <tr>
+                            <th>Store</th>
+                            <th>Category</th>
+                            <th>Account Type</th>
+                            <th>Bank</th>
+                            <th>Account Name</th>
+                            <th>Account #</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            parsedAccounts.forEach(account => {
+                tableHtml += `
+                    <tr>
+                        <td>${account.storeName}</td>
+                        <td><span style="color: ${account.category === 'Asset' ? '#27ae60' : '#e74c3c'}">${account.category}</span></td>
+                        <td>${account.accountType}</td>
+                        <td>${account.bank || '-'}</td>
+                        <td>${account.accountName}</td>
+                        <td>${account.accountNumber || '-'}</td>
+                        <td><span class="status-badge status-${account.status}">${account.status.toUpperCase()}</span></td>
+                    </tr>
+                `;
+            });
+
+            tableHtml += '</tbody></table>';
+            
+            document.getElementById('previewTableContainer').innerHTML = tableHtml;
+            document.getElementById('importPreview').style.display = 'block';
+            document.getElementById('confirmImportBtn').style.display = 'inline-block';
+        }
+
+        async function confirmBulkImport() {
+            if (parsedAccounts.length === 0) {
+                alert('No accounts to import');
+                return;
+            }
+
+            if (!confirm(`Import ${parsedAccounts.length} accounts? This cannot be undone.`)) {
+                return;
+            }
+
+            document.getElementById('importStatus').innerHTML = 'Importing accounts...';
+            const importBtn = document.getElementById('confirmImportBtn');
+            importBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/wizard/bulk-import', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({accounts: parsedAccounts})
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('importStatus').innerHTML = 
+                        `<span style="color: green;">✓ Successfully imported ${data.created} accounts!</span>`;
+                    
+                    setTimeout(() => {
+                        closeBulkImport();
+                        // Refresh the current store if one is selected
+                        if (window.currentStoreId) {
+                            window.onStoreChange();
+                        }
+                    }, 2000);
+                } else {
+                    document.getElementById('importStatus').innerHTML = 
+                        `<span style="color: red;">Error: ${data.error}</span>`;
+                    importBtn.disabled = false;
+                }
+            } catch (error) {
+                document.getElementById('importStatus').innerHTML = 
+                    `<span style="color: red;">Network error: ${error.message}</span>`;
+                importBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
